@@ -1,0 +1,36 @@
+# Copy and rename this to config.txt
+# Hash tag is considered a comment, can only be in beginning of sentence
+# You must fill in all fields even if analog scales is not used by digital inputs etc...
+
+# masterId.slaveId.Pin;pinExtra;iomode;reverse;center;pinMin;pinMax;xplaneDataRef;xplaneCenter;xplaneMin;xplaneMax;xplaneExtra;
+
+# example string:
+# 1.0.D5;0;DI_INPUT_PULLUP;0;0;0;1;sim/cockpit/switches/pitot_heat_on;0;0;1;0;
+# 1.0.A0;0;AI_RAW;0;500;100;900;sim/joystick/yoke_pitch_ratio;0.0;-1.0;1.0;0;
+
+/1;n;192.168.0.105 34555/ # this tells it to use ethernet
+
+
+# The indicated pitch on the panel for the first vacuum instrument
+1.0.A1;0;AO_TEXT;0;500;100;900;sim/cockpit/gyros/the_vac_ind_deg;0.0;-1.0;1.0;0;
+#psi_vac_ind_degm	float	740+	yes	degrees_magnetic	The indicated heading on the panel for the first vacuum instrument
+1.0.A2;0;AO_TEXT;0;500;100;900;sim/cockpit/gyros/psi_vac_ind_degm;0.0;-1.0;1.0;0;
+#phi_vac_ind_deg	float	740+	yes	degrees	The indicated roll on the panel for the first vacuum instrument
+1.0.A3;0;AO_TEXT;0;500;100;900;sim/cockpit/gyros/phi_vac_ind_deg;0.0;-1.0;1.0;0;
+
+# Indicated airspeed sim/cockpit2/gauges/indicators/airspeed_kts_pilot
+1.0.A4;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/airspeed_kts_pilot;0.0;-1.0;1.0;0;
+#sim/cockpit2/gauges/indicators/altitude_ft_pilot
+1.0.A5;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/altitude_ft_pilot;0.0;-1.0;1.0;0;
+
+
+
+
+# Radar
+#sim/flightmodel/position/local_x
+#sim/flightmodel/position/local_y
+#sim/flightmodel/position/local_z
+
+#	sim/multiplayer/position/plane1_x	double	y	meters	Plane 1 x location
+#	sim/multiplayer/position/plane1_y	double	y	meters	Plane 1 y location
+#	sim/multiplayer/position/plane1_z	double	y	meters	Plane 1 z location
