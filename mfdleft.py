@@ -213,7 +213,7 @@ class MFD():
         sa = speed/maxSpeed
         sa = sa * 360
         self.drawAline(sb, x, y, size, 0, sa, w=xscale(10))
-        speed = self.heading*10/10
+        speed = self.altitude/10
         sa = speed/maxSpeed
         sa = sa * 360
         self.drawAline(sb, x, y, size2, 0, sa, w=xscale(20))
@@ -470,7 +470,7 @@ class MFD():
             old_time = pygame.time.get_ticks()
             looptime = old_time - new_time
             #print(looptime)
-            #clock.tick(10)
+            clock.tick(60)
             #time.sleep(0.02)
                 #pygame.time.wait(0)
                 #pygame.time.wait(1)
