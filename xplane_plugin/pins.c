@@ -224,7 +224,7 @@ pin_struct* lineToStruct( char* line) {
 void readConfig() {
 	nrOfLines = 0;
 	nrOfPins = 0;
-  if ((configFile = fopen("Resources/plugins/openSimIO/config.txt","r")) == NULL){
+  if ((configFile = fopen("Resources/plugins/MFD39/config.txt","r")) == NULL){
        display("Error! opening configfile");
 
   } else {
@@ -242,7 +242,7 @@ void readConfig() {
 
     pins = malloc(nrOfLines * sizeof(pin_struct));
 
-    if ((configFile = fopen("Resources/plugins/openSimIO/config.txt","r")) == NULL){
+    if ((configFile = fopen("Resources/plugins/MFD39/config.txt","r")) == NULL){
          display("Error! opening configfile");
 
     } else {
@@ -770,7 +770,7 @@ void sendConfigToEth(udpSocket sock) {
     int i = sendcount;
     sendcount++;
     //{1;2;0;D3,1,0;A2,5,3;}
-    int len = sprintf(out, "{%d;%d;1;%s,%d,%d;}", pins[i].master, pins[i].slave, pins[i].pinNameString, pins[i].ioMode, pins[i].pinExtra);
+    int len = sprintf(out, "{%d;%d;1;%s,%d,%d;}\0", pins[i].master, pins[i].slave, pins[i].pinNameString, pins[i].ioMode, pins[i].pinExtra);
     //display("write udp:%s", out);
 		sendUDP(sock, out, len+1);
     //RS232_SendBuf(cport_nr, out, len+1);
@@ -801,7 +801,7 @@ void setDigitalPinEth(udpSocket sock,int pin, int value ) {
 	if (pins[pin].output == 1) {
 		if (pins[pin].prevValue != value) {
 
-			int len = sprintf(out, "{%d;%d;0;%s=%d;}", pins[pin].master, pins[pin].slave, pins[pin].pinNameString, value);
+			int len = sprintf(out, "{%d;%d;0;%s=%d;}\0", pins[pin].master, pins[pin].slave, pins[pin].pinNameString, value);
 			//display("write udp:%s", out);
 
 			sendUDP(sock, out, sizeof(out));
@@ -816,7 +816,7 @@ void setAnalogPinEth(udpSocket sock,int pin, float value ) {
 	if (pins[pin].output == 1) {
 		if (pins[pin].prevValueF != value) {
 
-			int len = sprintf(out, "{%d;%d;0;%s=%f;}", pins[pin].master, pins[pin].slave, pins[pin].pinNameString, value);
+			int len = sprintf(out, "{%d;%d;0;%s=%f;}\0", pins[pin].master, pins[pin].slave, pins[pin].pinNameString, value);
 			//display("write udp:%s", out);
 
 			sendUDP(sock, out, sizeof(out));
@@ -893,10 +893,10 @@ void handleOutputs(int serial, udpSocket netsocket) {
 			// Transform value
 			//int outValueInt = map(outValue, pins[i].xplaneMin, pins[i].xplaneMax, pins[i].pinMin, pins[i].pinMax);
 			//outValueInt = mapValue(outValue, pins[i].pinMin, pins[i].pinMax, pins[i].center, pins[i].xplaneMin, pins[i].xplaneMax, pins[i].reverse, pins[i].xplaneExtra, pins[i].xplaneCenter);
-
+			int outValueInt = 0;
 			switch (pins[i].ioMode) {
 				case DO_BOOL:    //
-					int outValueInt = 0;
+
 					if (outValue > pins[i].xplaneMax) {
 						// turn light off if it is greater than xplaneMax
 
@@ -924,11 +924,11 @@ void handleOutputs(int serial, udpSocket netsocket) {
 					break;
 				case AO_TEXT:    //
 					setAnalogPinEth(netsocket,i,outValue);
-					return;
+					continue;
 
 					break;
 				default:
-					int outValueInt = mapValue(outValue, pins[i].xplaneMin, pins[i].xplaneMax, pins[i].xplaneCenter, pins[i].pinMin, pins[i].pinMax, pins[i].reverse, pins[i].xplaneExtra, pins[i].center);
+					outValueInt = mapValue(outValue, pins[i].xplaneMin, pins[i].xplaneMax, pins[i].xplaneCenter, pins[i].pinMin, pins[i].pinMax, pins[i].reverse, pins[i].xplaneExtra, pins[i].center);
 
 					break;
 			}

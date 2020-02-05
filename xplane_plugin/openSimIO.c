@@ -54,6 +54,7 @@ int useEthernet = 0;
 int useSerial = 0;
 
 udpSocket asock;
+udpSocket lsock;
 
 void reloadConfig() {
 	XPLMDebugString("reloadConfig\n");
@@ -162,16 +163,16 @@ PLUGIN_API int XPluginStart(
 
 	statusDisplayInit();
 
-  XPLMDebugString("read config");
+  XPLMDebugString("read config\n");
 
   readConfig();
-  XPLMDebugString("read config done");
+  XPLMDebugString("read config done\n");
 
-	XPLMDebugString("read serial config");
+	XPLMDebugString("read serial config\n");
   char sport[32];
   if (readSerialConfig(sport) == 1) {
 		useSerial = 1;
-    XPLMDebugString("serial 1");
+    XPLMDebugString("serial 1\n");
     display("creating serialport %s ", sport);
 		char mode[]={'8','N','1',0};
 
@@ -181,18 +182,19 @@ PLUGIN_API int XPluginStart(
 
 		}
   }
-  XPLMDebugString("serial done");
+  XPLMDebugString("serial done\n");
 
-  XPLMDebugString("ethernet");
+  XPLMDebugString("ethernet\n");
   char ip[18];
 	int port;
   if (readEthernetConfig(ip, &port) == 1) {
-    XPLMDebugString("ethernet 1");
+    XPLMDebugString("ethernet 1\n");
 		useEthernet = 1;
-    display("creating socket %s %d", ip, port);
+    display("creating socket %s %d\n", ip, port);
     asock = createUDPSocket(ip, port);
+		//lsock = createUDPSocket(ip, 34554);
   }
-  XPLMDebugString("ethernet done");
+  XPLMDebugString("ethernet done\n");
 	//asock = createUDPSocket("192.168.0.105", 34555);
   /* Register our callback for once a second.  Positive intervals
 	 * are in seconds, negative are the negative of sim frames.  Zero
@@ -476,8 +478,8 @@ float	MyFlightLoopCallback( float inElapsedSinceLastCall,
 			sendConfigReset();
 		}
 		// Tell the arduino that we are ready for next frame.
-		char out[10] = "*";
-		sendUDP(asock, out, sizeof(out));
+		//char out[10] = "*";
+		//sendUDP(asock, out, sizeof(out));
 
 	}
 
@@ -494,7 +496,7 @@ float	MyFlightLoopCallback( float inElapsedSinceLastCall,
 
 int readEthernetConfig( char* ip, int* port) {
   FILE *configFile;
-  if ((configFile = fopen("Resources/plugins/openSimIO/config.txt","r")) == NULL){
+  if ((configFile = fopen("Resources/plugins/MFD39/config.txt","r")) == NULL){
     XPLMDebugString("Error! opening configfile\n");
      display("Error! opening configfile");
   } else {
@@ -508,12 +510,12 @@ int readEthernetConfig( char* ip, int* port) {
 
         int res = sscanf(line, "/1;n;%s %d/", ip, port);
         if (res == 2) {
-					XPLMDebugString("Found ip in config");
+					XPLMDebugString("Found ip in config\n");
 	        display("Found ip in config");
-          XPLMDebugString("ethernet ok");
+          XPLMDebugString("ethernet ok\n");
           return 1;
         }else {
-          XPLMDebugString("ethernet error2");
+          XPLMDebugString("ethernet error2\n");
         }
 
       }
@@ -526,7 +528,7 @@ int readEthernetConfig( char* ip, int* port) {
 
 int readSerialConfig( char* port) {
   FILE *configFile;
-  if ((configFile = fopen("Resources/plugins/openSimIO/config.txt","r")) == NULL){
+  if ((configFile = fopen("Resources/plugins/MFD39/config.txt","r")) == NULL){
     XPLMDebugString("Error! opening configfile\n");
      display("Error! opening configfile");
   } else {

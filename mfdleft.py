@@ -28,6 +28,7 @@ pygame.init()
 
 screenwidth = 480
 screenheight = 320
+localPort = 34556
 
 def xscale(x):
 
@@ -162,7 +163,7 @@ class MFD():
         size2 = xscale(128/2)
         x = xscale(285)
         y = xscale(230)
-        speed = self.heading
+        speed = self.speed
         maxSpeed = 900
 
         #Yttre cirkeln
@@ -190,7 +191,7 @@ class MFD():
         size2 = xscale(220/2)
         x = xscale(1020)
         y = xscale(230)
-        speed = self.heading*10
+        speed = self.altitude
         maxSpeed = 1000
 
         #Yttre cirkeln
@@ -248,22 +249,7 @@ class MFD():
 
 
         #Globe
-        self.heading = self.heading + 1.0
-        if self.heading > 360.0:
-            self.heading = 0.0
 
-        self.tilt = self.tilt + 1.0
-        if self.tilt > 45.0:
-            self.tilt = 0.0
-        self.tilt = 0
-
-
-
-
-        self.rotate = self.rotate + 1.0
-        if self.rotate > 360.0:
-            self.rotate = 0.0
-        self.rotate = 0.0
 
         dst = self.createGlobe(self.heading, self.tilt, self.rotate)
         dst = np.swapaxes(dst, 0, 1)
@@ -355,6 +341,8 @@ class MFD():
         self.heading = 0.0
         self.tilt = 0.0
         self.rotate = 0.0
+        self.speed = 0.0
+        self.altitude = 0.0
 
         #quickfix for start in fullscreen
         fullscreen = False
@@ -380,8 +368,47 @@ class MFD():
         # end quickfix
 
         # main loop
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.s.bind(('', localPort))
+        self.s.setblocking(0)
+
+
         while running:
             pygame.event.pump()
+            moredata = True
+            while moredata:
+                try:
+                    message, address = self.s.recvfrom(4098)
+                    stringdata = message.decode('utf-8', "ignore").split("}")[0]
+                    #print(stringdata)
+                    if "A1=" in stringdata:
+                        a1 = stringdata.split("A1=")
+                        a1 = a1[1].replace(";","")
+
+                        self.tilt = float(a1)
+                    if "A2=" in stringdata:
+                        a1 = stringdata.split("A2=")
+                        a1 = a1[1].replace(";","")
+                        #print(a1)
+                        self.heading = float(a1)
+                    if "A3=" in stringdata:
+                        a1 = stringdata.split("A3=")
+                        a1 = a1[1].replace(";","")
+                        #print(a1)
+                        self.rotate = float(a1)
+                    if "A4=" in stringdata:
+                        a1 = stringdata.split("A4=")
+                        a1 = a1[1].replace(";","")
+                        #print(a1)
+                        self.speed = float(a1)
+                    if "A5=" in stringdata:
+                        a1 = stringdata.split("A5=")
+                        a1 = a1[1].replace(";","")
+                        #print(a1)
+                        self.altitude = float(a1)
+                except socket.error:
+                    moredata = False
+
 
             # event handling, gets all event from the eventqueue
             for event in pygame.event.get():
@@ -443,7 +470,7 @@ class MFD():
             old_time = pygame.time.get_ticks()
             looptime = old_time - new_time
             #print(looptime)
-            clock.tick(10)
+            #clock.tick(10)
             #time.sleep(0.02)
                 #pygame.time.wait(0)
                 #pygame.time.wait(1)
