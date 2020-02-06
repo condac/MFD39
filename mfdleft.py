@@ -310,7 +310,7 @@ class MFD():
         # Display some text
         #print(pygame.font.get_fonts())
 
-        textstring = os.getloadavg()
+        textstring = " " #os.getloadavg()
         cpuText = self.font8.render(str(textstring[0]), 0, (255, 255, 255))
         cpuTextPos = (self.w*0.5875+65 -cpuText.get_rect().width,10 )
 
