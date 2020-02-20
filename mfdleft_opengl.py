@@ -40,6 +40,9 @@ gload = 1.0
 gearratio = 0.0
 geardown = True
 
+connection = False
+
+
 # main loop
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(('', localPort))
@@ -183,7 +186,7 @@ balldepth = 22.0
 
 
 def readNetwork():
-    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel
+    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel, connection
     moredata = True
     while moredata:
         try:
@@ -195,6 +198,8 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
 
                 tilt = float(a1)
+                connection = True
+
             if "A2=" in stringdata:
                 a1 = stringdata.split("A2=")
                 a1 = a1[1].replace(";","")
@@ -215,28 +220,30 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 altitude = float(a1)
+                connection = True
             if "A6=" in stringdata:
-                a1 = stringdata.split("A5=")
+                a1 = stringdata.split("A6=")
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 rawFuel = float(a1)
                 fuel = rawFuel / totalFuel
             if "A7=" in stringdata:
-                a1 = stringdata.split("A5=")
+                a1 = stringdata.split("A7=")
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 gload = float(a1)
             if "A8=" in stringdata:
-                a1 = stringdata.split("A5=")
+                a1 = stringdata.split("A8=")
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 gearratio = float(a1)
         except socket.error:
             moredata = False
 def update_frame(x, y):
-    global gearratio, geardown
+    global gearratio, geardown, connection
 
-    fakevalues()
+    if (connection == False):
+        fakevalues()
     readNetwork()
 
     if (gearratio >=0.9):
@@ -259,7 +266,7 @@ def draw_sphere():
     gluLookAt (0.0, radie, pan, 0.0, 0.0, pan,0.0 , 0.0, 1.0);
     glRotatef(rota, 0.0, 1.0, 0.0)
     glRotatef(-tilt, 1.0, 0.0, 0.0)
-    glRotatef(-heading+90+90, 0.0, 0.0, 1.0)
+    glRotatef(-heading+6.5, 0.0, 0.0, 1.0)
 
     glColor3f(1.0, 1.0, 1.0)
     glEnable(texture.target)        # typically target is GL_TEXTURE_2D
@@ -317,7 +324,7 @@ def draw_speed():
     setColor(colorGreenMedium)
     #glTranslatef(0.0, 0.0 , -0.2 )
 
-    speedlabel.text = str(speed)
+    speedlabel.text = str(int(speed) )
     speedlabel.x = x
     speedlabel.y = y
     glDisable(GL_DEPTH_TEST)
@@ -401,7 +408,7 @@ def draw_altitude():
     glColor4f(0.0, 1.0, 0.0, 1.0)
     #glTranslatef(0.0, 0.0 , -0.2 )
 
-    speedlabel.text = str(altitude)
+    speedlabel.text = str(int(altitude) )
     speedlabel.x = x+size
     speedlabel.y = y+size
     glDisable(GL_DEPTH_TEST)
@@ -754,6 +761,7 @@ def on_key_press(s,m):
             geardown = True
     if s == pyglet.window.key.F5:
         totalFuel = rawFuel
+        print(rawFuel)
 
 
 @window.event
