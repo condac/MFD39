@@ -216,18 +216,18 @@ def readNetwork():
                 #print(a1)
                 altitude = float(a1)
             if "A6=" in stringdata:
-                a1 = stringdata.split("A5=")
+                a1 = stringdata.split("A6=")
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 rawFuel = float(a1)
                 fuel = rawFuel / totalFuel
             if "A7=" in stringdata:
-                a1 = stringdata.split("A5=")
+                a1 = stringdata.split("A7=")
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 gload = float(a1)
             if "A8=" in stringdata:
-                a1 = stringdata.split("A5=")
+                a1 = stringdata.split("A8=")
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 gearratio = float(a1)
