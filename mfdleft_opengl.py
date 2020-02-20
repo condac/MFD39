@@ -30,7 +30,7 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(('', localPort))
 s.setblocking(0)
 
-config = pyglet.gl.Config(sample_buffers=1, samples=4, depth_size=24)
+config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24)
 window = pyglet.window.Window(config=config, resizable=True)
 glEnable(GL_LINE_SMOOTH)
 glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
@@ -77,9 +77,23 @@ def aiscale(a):
     return int(afscale(a))
 
 
+def fuelscale(percent, height):
+    #percent is value 0-2.0 for 200 percent fuel with external tanks
+
+    scale = (2.0**0.5)
+    out = (percent**0.5)*height/scale
+    return out
+
+def linescale(value, maxValue, height):
+    #percent is value 0-2.0 for 200 percent fuel with external tanks
+
+    percent = value / maxValue
+    out = (percent)*height
+    return out
+
 
 def createLabels():
-    global speedlabel, smalllabel, speedlabels, altlabels
+    global speedlabel, smalllabel, speedlabels, altlabels, fuellabel
     speedlabel = pyglet.text.Label(str("speed"),
                           font_name='Arial',
                           font_size=aiscale(32),
@@ -94,6 +108,13 @@ def createLabels():
                           x=window.width//2, y=window.height//2,
                           anchor_x='center', anchor_y='center',
                           group=None)
+    fuellabel = pyglet.text.Label(str("speed"),
+                        font_name='Monospace',
+                        font_size=aiscale(25),
+                        color=(0,255,0,255),
+                        x=window.width//2, y=window.height//2,
+                        anchor_x='right', anchor_y='center',
+                        group=None)
     speedlabels = []
     for i in range(10):
         new = pyglet.text.Label(str(i),
@@ -132,13 +153,6 @@ texture = pic.get_texture()
 screenwidth = 480
 screenheight = window.height
 localPort = 34556
-
-
-# get all the points in a circle centered at 0.
-def PointsInCircum(r, n=25, pi=3.14):
-    return [(math.cos(2*pi/n*x)*r,math.sin(2*pi/n*x)*r) for x in range(0,n+1)]
-pts = np.array(PointsInCircum(20))
-
 # function that increments to the next
 # point along a circle
 frame = 0
@@ -149,7 +163,10 @@ rota = 0.0
 
 speed = 0
 altitude = 0
+fuel = 1.0
+gload = 1.0
 
+gearratio = 0.0
 geardown = True
 
 
@@ -159,8 +176,9 @@ ballsize = 10.0
 balldepth = 22.0
 
 
+
 def readNetwork():
-    global tilt, heading, rota, speed, altitude
+    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
     moredata = True
     while moredata:
         try:
@@ -192,18 +210,33 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 altitude = float(a1)
+            if "A6=" in stringdata:
+                a1 = stringdata.split("A5=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                fuel = float(a1)
+            if "A7=" in stringdata:
+                a1 = stringdata.split("A5=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                gload = float(a1)
+            if "A8=" in stringdata:
+                a1 = stringdata.split("A5=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                gearratio = float(a1)
         except socket.error:
             moredata = False
 def update_frame(x, y):
-    global frame
-    global heading
-    if frame == None or frame == pts.shape[0]-1:
-        frame = 0
-    else:
-        frame += 1
+    global gearratio, geardown
+
     fakevalues()
     readNetwork()
-    #heading = heading + 0.1
+
+    if (gearratio >=0.9):
+        geardown = True
+    else:
+        geardown = False
 
 def draw_sphere():
     global heading, radie, tilt, rota
@@ -437,6 +470,122 @@ def drawFlightDirector(x, y):
         line(x, y+body, x, y+wingspan, afscale(5), colorGreenIntense)
     #pygame.draw.line(sb, self.colorGreen10,(x , y+body),(x, y+wingspan), xscale(10))
 
+def drawFuelGauge(x,y):
+    global fuel, fuellabel
+    height = afscale(440)
+    longline = afscale(20)
+    shortline = afscale(10)
+
+    line(x , y, x, y+fuelscale(2.0, height), afscale(5), colorGreenMedium)
+
+    #Line at 2.0
+    line(x , y+fuelscale(2.0, height), x-longline, y+fuelscale(2.0, height), afscale(5), colorGreenMedium)
+
+    #Line at 1.5 long
+    line(x , y+fuelscale(1.5, height), x-longline, y+fuelscale(1.5, height), afscale(5), colorGreenMedium)
+
+    #Line at 1.0
+    line(x , y+fuelscale(1.0, height), x-longline, y+fuelscale(1.0, height), afscale(5), colorGreenMedium)
+
+    #Line at 0.5
+    line(x , y+fuelscale(0.5, height), x-longline, y+fuelscale(0.5, height), afscale(5), colorGreenMedium)
+
+    #Small lines 0 to 1
+
+    for i in range(10):
+        iy = float(i/10.0)
+        line(x , y+fuelscale(iy, height), x-shortline, y+fuelscale(iy, height), afscale(5), colorGreenMedium)
+
+    #fuel bar
+    if (fuel >2.0):
+        fuel = 2.0
+    #lien at top of fuelbar
+    line(x , y+fuelscale(fuel, height), x+longline, y+fuelscale(fuel, height), afscale(5), colorGreenIntense)
+    #bar
+    line(x+longline/2 , y, x+longline/2, y+fuelscale(fuel, height), longline, colorGreenMedium)
+
+    #texts
+    fuellabel.text = str(2)
+    fuellabel.x = x-longline
+    fuellabel.y = y + fuelscale(2.0, height)
+    fuellabel.draw()
+
+    fuellabel.text = str(1)
+    fuellabel.x = x-longline
+    fuellabel.y = y + fuelscale(1.0, height)
+    fuellabel.draw()
+
+    fuellabel.text = str(".5")
+    fuellabel.x = x-longline
+    fuellabel.y = y + fuelscale(0.5, height)
+    fuellabel.draw()
+
+    fuellabel.text = str("B")
+    fuellabel.x = x-longline
+    fuellabel.y = y + (fuellabel.font_size+2)*3
+    fuellabel.draw()
+
+    fuellabel.text = str("R")
+    fuellabel.x = x-longline
+    fuellabel.y = y + (fuellabel.font_size+2)*2
+    fuellabel.draw()
+
+    fuellabel.text = str("Ä")
+    fuellabel.x = x-longline
+    fuellabel.y = y + (fuellabel.font_size+2)*1
+    fuellabel.draw()
+
+
+def drawGLoad(x,y):
+    global gload, fuellabel
+    height = afscale(380)
+    longline = afscale(20)
+    shortline = afscale(10)
+    maxg = 9.0
+
+    line(x , y, x, y+linescale(maxg, maxg, height), afscale(5), colorGreenMedium)
+
+    #Line at 9.0
+    line(x , y+linescale(9.0, maxg, height), x-longline, y+linescale(9.0, maxg, height), afscale(5), colorGreenMedium)
+
+
+    #Small lines 0 to 9
+
+    for i in range(int(maxg)):
+
+        line(x , y+linescale(float(i), maxg, height), x-longline, y+linescale(float(i), maxg, height), afscale(5), colorGreenMedium)
+
+    #G bar
+    if (gload >10.0):
+        gload = 10.0
+    #lien at top of G bar
+    line(x , y+linescale(gload, maxg, height), x+longline, y+linescale(gload, maxg, height), afscale(5), colorGreenIntense)
+    #G bar
+    line(x+longline/2 , y, x+longline/2, y+linescale(gload, maxg, height), longline, colorGreenMedium)
+
+    #texts
+    fuellabel.text = str(9)
+    fuellabel.x = x-longline
+    fuellabel.y = y + linescale(9, maxg, height)
+    fuellabel.draw()
+
+    fuellabel.text = str(6)
+    fuellabel.x = x-longline
+    fuellabel.y = y + linescale(6, maxg, height)
+    fuellabel.draw()
+
+    fuellabel.text = str(3)
+    fuellabel.x = x-longline
+    fuellabel.y = y + linescale(3, maxg, height)
+    fuellabel.draw()
+
+    fuellabel.text = str("G")
+    fuellabel.x = x
+    fuellabel.y = y + height+(fuellabel.font_size)
+    fuellabel.draw()
+
+
+
 def setColor(color):
     (r,g,b,a) = color
     glColor4f(r, g, b, a)
@@ -560,16 +709,12 @@ def on_draw():
     draw_speed()
     draw_altitude()
 
+    drawFuelGauge(xfscale(475), yfscale(128))
+    drawGLoad(xfscale(-385), yfscale(128))
     drawFlightDirector(window.width/2, yfscale(400))
 
     glColor4f(1.0,0,0,1.0)
     fps_display.draw()
-
-
-    glBegin(GL_LINES)
-    glVertex3f(100,100,0)
-    glVertex3f(pts[frame][1]+100,pts[frame][0]+100,0)
-    glEnd()
 
     unSet2d()
 
