@@ -490,6 +490,7 @@ def drawFuelGauge(x,y):
     height = afscale(440)
     longline = afscale(20)
     shortline = afscale(10)
+    glDisable(GL_DEPTH_TEST)
 
     line(x , y, x, y+fuelscale(2.0, height), afscale(5), colorGreenMedium)
 
@@ -549,6 +550,7 @@ def drawFuelGauge(x,y):
     fuellabel.x = x-longline
     fuellabel.y = y + (fuellabel.font_size+2)*1
     fuellabel.draw()
+    glEnable(GL_DEPTH_TEST)
 
 
 def drawGLoad(x,y):

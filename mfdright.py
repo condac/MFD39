@@ -167,7 +167,7 @@ texture = pic.get_texture()
 
 screenwidth = 480
 screenheight = window.height
-localPort = 34556
+
 # function that increments to the next
 # point along a circle
 frame = 0
