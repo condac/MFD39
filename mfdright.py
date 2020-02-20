@@ -24,7 +24,7 @@ import scipy.ndimage.interpolation
 #glEnable(GL_TEXTURE_2D)         # enable textures
 #glShadeModel(GL_SMOOTH)         # smooth shading of polygons
 
-localPort = 34556
+localPort = 34557
 
 heading = 0.0
 tilt = 0.0
@@ -270,6 +270,21 @@ def drawAtext(x,y,r1,text,angle, w=1):
 
 def drawRadar(x, y):
     global heading
+    fov = 90
+    range = afscale(750)
+    glPushMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+
+    glTranslatef(x, y , -0.0 ) #x,y,z,
+
+    glRotatef(-90+fov/2, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
+
+    setColor(colorGreenDark)
+
+    pie_circle(0,0,range, fov/360)
+
+    glPopMatrix()
     return
 
 def drawFlightDirector(x, y):
@@ -501,10 +516,11 @@ def on_draw():
 
     #drawFuelGauge(xfscale(475), yfscale(128))
     #drawGLoad(xfscale(-385), yfscale(128))
+
     drawCompass(xfscale(0), yfscale(910), afscale(900))
     drawFlightDirector(xfscale(0), yfscale(500))
     drawFlightDirectorLines(xfscale(0), yfscale(500))
-
+    drawRadar(xfscale(0), yfscale(50))
     glColor4f(1.0,0,0,1.0)
     fps_display.draw()
 
