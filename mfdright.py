@@ -46,7 +46,7 @@ s.bind(('', localPort))
 s.setblocking(0)
 
 config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24)
-window = pyglet.window.Window(config=config, resizable=True)
+window = pyglet.window.Window(config=config, resizable=True, width = 1024, height=768)
 glEnable(GL_LINE_SMOOTH)
 glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
 glEnable(GL_BLEND)                                  # transparency
