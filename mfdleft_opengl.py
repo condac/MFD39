@@ -25,6 +25,21 @@ import scipy.ndimage.interpolation
 #glShadeModel(GL_SMOOTH)         # smooth shading of polygons
 
 localPort = 34556
+
+heading = 0.0
+tilt = 0.0
+rota = 0.0
+
+speed = 0
+altitude = 0
+fuel = 1.0
+totalFuel = 1000.0
+rawFuel = 1.0
+gload = 1.0
+
+gearratio = 0.0
+geardown = True
+
 # main loop
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(('', localPort))
@@ -157,17 +172,7 @@ localPort = 34556
 # point along a circle
 frame = 0
 
-heading = 0.0
-tilt = 0.0
-rota = 0.0
 
-speed = 0
-altitude = 0
-fuel = 1.0
-gload = 1.0
-
-gearratio = 0.0
-geardown = True
 
 
 radie = 30
@@ -178,7 +183,7 @@ balldepth = 22.0
 
 
 def readNetwork():
-    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
+    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel
     moredata = True
     while moredata:
         try:
@@ -214,7 +219,8 @@ def readNetwork():
                 a1 = stringdata.split("A5=")
                 a1 = a1[1].replace(";","")
                 #print(a1)
-                fuel = float(a1)
+                rawFuel = float(a1)
+                fuel = rawFuel / totalFuel
             if "A7=" in stringdata:
                 a1 = stringdata.split("A5=")
                 a1 = a1[1].replace(";","")
@@ -237,6 +243,8 @@ def update_frame(x, y):
         geardown = True
     else:
         geardown = False
+
+
 
 def draw_sphere():
     global heading, radie, tilt, rota
@@ -721,7 +729,7 @@ def on_draw():
 @window.event
 def on_key_press(s,m):
 
-    global heading, tilt, radie, rota, geardown
+    global heading, tilt, radie, rota, geardown, totalFuel, rawFuel
 
     if s == pyglet.window.key.W:
         tilt -= 1.1
@@ -744,7 +752,8 @@ def on_key_press(s,m):
             geardown = False
         else:
             geardown = True
-
+    if s == pyglet.window.key.F5:
+        totalFuel = rawFuel
 
 
 @window.event

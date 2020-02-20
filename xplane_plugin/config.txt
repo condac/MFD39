@@ -24,10 +24,14 @@
 #sim/cockpit2/gauges/indicators/altitude_ft_pilot
 1.0.A5;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/altitude_ft_pilot;0.0;-1.0;1.0;0;
 
-1.0.A6;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/altitude_ft_pilot;0.0;-1.0;1.0;0;
+#fuel
+1.0.A6;0;AO_TEXT;0;500;100;900;sim/cockpit2/fuel/fuel_quantity[0];0.0;-1.0;1.0;0;
 
-1.0.A7;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/altitude_ft_pilot;0.0;-1.0;1.0;0;
+#gload
+1.0.A7;0;AO_TEXT;0;500;100;900;sim/flightmodel/forces/g_nrml;0.0;-1.0;1.0;0;
 
+#gearratio
+1.0.A8;0;AO_TEXT;0;500;100;900;sim/aircraft/parts/acf_gear_deploy[0];0.0;-1.0;1.0;0;
 
 
 
