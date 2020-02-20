@@ -299,7 +299,7 @@ def drawFlightDirectorLines(x, y):
     offset = afscale(75)
     linewidth = afscale(5)
 
-    tiltoffset = afscale(tilt*2.0)
+    tiltoffset = afscale(-tilt*10.0)
 
     glPushMatrix()
     glMatrixMode(GL_MODELVIEW)
