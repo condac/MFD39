@@ -1,6 +1,7 @@
 #include "openSimIO.h"
 #include "udp.h"
 #include "pins.h"
+#include "config.h"
 #include "rs232.h"
 #include "statusDisplay.h"
 // Downloaded from https://developer.x-plane.com/code-sample/hello-world-sdk-3/
@@ -37,7 +38,7 @@ int					dummy_wheel_handler(XPLMWindowID in_window_id, int x, int y, int wheel, 
 void				dummy_key_handler(XPLMWindowID in_window_id, char key, XPLMKeyFlags flags, char virtual_key, void * in_refcon, int losing_focus) { }
 #endif
 static float	MyFlightLoopCallback(float inElapsedSinceLastCall,float inElapsedTimeSinceLastFlightLoop, int inCounter, void* inRefcon);
-int readEthernetConfig( char* ip, int* port);
+
 
 static XPLMDataRef		gDataRef = NULL;
 static XPLMDataRef		testDataRef = NULL;

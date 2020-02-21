@@ -1,4 +1,6 @@
-
+#ifndef PINS_H_INCLUDED
+#define PINS_H_INCLUDED
+#include "udp.h"
 void readConfig();
 void sendConfigReset();
 void sendConfigToArduino(int cport_nr);
@@ -12,5 +14,31 @@ void setStepLoop();
 void sendDataToArduino(int cport_nr);
 void handleOutputs(int serial, udpSocket netsocket);
 
-extern int useEthernet;
-extern int useSerial;
+
+typedef struct  {
+
+	int master;
+	int slave;
+	int ioMode;
+	XPLMDataRef dataRef;
+	XPLMCommandRef commandRef;
+	int dataRefIndex;
+	int pinExtra;
+	float pinMin;
+	float pinMax;
+	float xplaneCenter;
+	float xplaneMin;
+	float xplaneMax;
+	float xplaneExtra;
+	float center;
+	int reverse;
+	int pinNr;
+	char pinNameString[10];
+	char dataRefString[512];
+	int output;
+	int prevValue;
+	float prevValueF;
+	float lastSimValue;
+
+} pin_struct;
+#endif

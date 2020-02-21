@@ -10,37 +10,16 @@
 #include "iotypes.h"
 #include "pins.h"
 
-typedef struct  {
 
-	int master;
-	int slave;
-	int ioMode;
-	XPLMDataRef dataRef;
-	XPLMCommandRef commandRef;
-	int dataRefIndex;
-	int pinExtra;
-	float pinMin;
-	float pinMax;
-	float xplaneCenter;
-	float xplaneMin;
-	float xplaneMax;
-	float xplaneExtra;
-	float center;
-	int reverse;
-	int pinNr;
-	char pinNameString[10];
-	char dataRefString[512];
-	int output;
-	int prevValue;
-	float prevValueF;
-	float lastSimValue;
 
-} pin_struct;
 
-FILE *configFile;
+extern int useEthernet;
+extern int useSerial;
 
-int nrOfLines = 0;
-int nrOfPins = 0;
+extern int nrOfLines = 0; // from config.h
+extern int nrOfPins = 0; // from config.h
+
+
 float timeStep = 0;
 float timeLast = 0;
 
@@ -221,46 +200,8 @@ pin_struct* lineToStruct( char* line) {
 #endif
 
 
-void readConfig() {
-	nrOfLines = 0;
-	nrOfPins = 0;
-  if ((configFile = fopen("Resources/plugins/MFD39/config.txt","r")) == NULL){
-       display("Error! opening configfile");
 
-  } else {
 
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    while ((read = getline(&line, &len, configFile)) != -1) {
-      nrOfLines++;
-    }
-    fclose(configFile);
-
-    //display("lines in config file %d", nrOfLines);
-
-    pins = malloc(nrOfLines * sizeof(pin_struct));
-
-    if ((configFile = fopen("Resources/plugins/MFD39/config.txt","r")) == NULL){
-         display("Error! opening configfile");
-
-    } else {
-      char * line = NULL;
-      size_t len = 0;
-      ssize_t read;
-      while ((read = getline(&line, &len, configFile)) != -1) {
-        //display("%s", line);
-        pin_struct* newPin = lineToStruct(line);
-        if (newPin != NULL) {
-          memcpy(pins+nrOfPins, newPin, sizeof(pin_struct));
-          nrOfPins++;
-        }
-      }
-    }
-  }
-
-}
 
 
 void setAnalogPin() {
