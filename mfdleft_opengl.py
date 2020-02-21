@@ -33,7 +33,7 @@ rota = 0.0
 speed = 0
 altitude = 0
 fuel = 1.0
-totalFuel = 1000.0
+totalFuel = 1700.0
 rawFuel = 1.0
 gload = 1.0
 
@@ -47,9 +47,17 @@ connection = False
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(('', localPort))
 s.setblocking(0)
+#platform = pyglet.window.get_platform()
+#display = platform.get_default_display()
+display = pyglet.canvas.get_display()
+screens = display.get_screens()
+if (len(screens) >1):
+  screen = screens[1]
+else:
+  screen = screens[0]
 
 config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24)
-window = pyglet.window.Window(config=config, resizable=True, width = 1024, height=768)
+window = pyglet.window.Window(config=config, resizable=True, width = 1024, height=768, screen=screen, fullscreen=True)
 glEnable(GL_LINE_SMOOTH)
 glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
 glEnable(GL_BLEND)                                  # transparency
@@ -764,7 +772,8 @@ def on_key_press(s,m):
     if s == pyglet.window.key.F5:
         totalFuel = rawFuel
         print(rawFuel)
-
+    if s == pyglet.window.key.F4:
+        window.set_fullscreen(not window.fullscreen)
 
 @window.event
 def on_resize(width, height):
