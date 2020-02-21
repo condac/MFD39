@@ -86,8 +86,7 @@ XPLM200—X-Plane 9.00 & newer
 
 void MyMenuHandlerCallback(void* inMenuRef, void* inItemRef);
 void reloadConfig();
-int readSerialConfig( char* port);
-int readEthernetConfig( char* ip, int* port);
+
 
 // display.c
 extern int TeensyControls_show;
@@ -96,9 +95,3 @@ void TeensyControls_display_init(void);
 void TeensyControls_display_toggle(void);
 int TeensyControls_display(const char *format, ...) __attribute__ ((format (printf, 1, 2)));;
 int TeensyControls_display(const char *format, ...);
-
-
-#define IS_ETH 1
-#define IS_SERIAL 2
-#define MAXMASTERS 10
-int mastersActive[MAXMASTERS];

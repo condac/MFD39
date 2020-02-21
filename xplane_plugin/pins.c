@@ -9,6 +9,7 @@
 #include "statusDisplay.h"
 #include "iotypes.h"
 #include "pins.h"
+#include "config.h"
 
 
 
@@ -16,9 +17,10 @@
 extern int useEthernet;
 extern int useSerial;
 
-extern int nrOfLines = 0; // from config.h
-extern int nrOfPins = 0; // from config.h
+extern int nrOfLines; // from config.h
+extern int nrOfPins; // from config.h
 
+extern master_struct masters[MAXMASTERS];
 
 float timeStep = 0;
 float timeLast = 0;
@@ -685,38 +687,6 @@ void parseInputPin(char* data, int masterId, int slaveId) {
   }
 }
 
-int sendcount = 0;
-
-void sendConfigReset() {
-  sendcount = 0;
-}
-void sendConfigToArduino(int cport_nr) {
-  char out[512];
-
-  // send digital data to arduino
-  if (sendcount<nrOfPins) {
-    int i = sendcount;
-    sendcount++;
-    //{1;2;0;D3,1,0;A2,5,3;}
-    int len = sprintf(out, "{%d;%d;1;%s,%d,%d;}", pins[i].master, pins[i].slave, pins[i].pinNameString, pins[i].ioMode, pins[i].pinExtra);
-    display("write serial:%s", out);
-    RS232_SendBuf(cport_nr, out, len+1);
-  }
-}
-void sendConfigToEth(udpSocket sock) {
-  char out[512];
-
-  // send digital data to arduino
-  if (sendcount<nrOfPins) {
-    int i = sendcount;
-    sendcount++;
-    //{1;2;0;D3,1,0;A2,5,3;}
-    int len = sprintf(out, "{%d;%d;1;%s,%d,%d;}\0", pins[i].master, pins[i].slave, pins[i].pinNameString, pins[i].ioMode, pins[i].pinExtra);
-    //display("write udp:%s", out);
-		sendUDP(sock, out, len+1);
-    //RS232_SendBuf(cport_nr, out, len+1);
-  }
-}
 
 
 void setDigitalPinSerial(int cport_nr,int pin, int value ) {
@@ -803,7 +773,7 @@ void sendDataToUDP(udpSocket sock) {
 		}
 	}
 }
-void handleOutputs(int serial, udpSocket netsocket) {
+void handleOutputs() {
 	for (int i=0;i<nrOfPins;i++) {
 		if (pins[i].output == 1) {
 			if (pins[i].ioMode == DO_HIGH || pins[i].ioMode == DO_LOW) {
@@ -864,7 +834,11 @@ void handleOutputs(int serial, udpSocket netsocket) {
 
 					break;
 				case AO_TEXT:    //
-					setAnalogPinEth(netsocket,i,outValue);
+
+					if (masters[pins[i].master].type == IS_ETH) {
+
+						setAnalogPinEth(masters[pins[i].master].socket,i,outValue);
+			      }
 					continue;
 
 					break;
@@ -874,12 +848,13 @@ void handleOutputs(int serial, udpSocket netsocket) {
 					break;
 			}
 			// if ethernet or serial
-			if (useSerial == 1) {
-				setDigitalPinSerial(serial,i,outValueInt);
-			}
-			if (useEthernet == 1) {
-				setDigitalPinEth(netsocket,i,outValueInt);
-			}
+
+			if (masters[pins[i].master].type == IS_SERIAL) {
+				setDigitalPinSerial(masters[pins[i].master].serialport,i,outValueInt);
+	      }
+	      if (masters[pins[i].master].type == IS_ETH) {
+				setDigitalPinEth(masters[pins[i].master].socket,i,outValueInt);
+	      }
 
 		}
 	}

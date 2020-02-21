@@ -1,6 +1,5 @@
 #ifndef PINS_H_INCLUDED
 #define PINS_H_INCLUDED
-#include "udp.h"
 void readConfig();
 void sendConfigReset();
 void sendConfigToArduino(int cport_nr);
@@ -12,7 +11,7 @@ void drawStatusDisplayInfo();
 void setRawDataFromRef(XPLMDataRef dataRef, float value);
 void setStepLoop();
 void sendDataToArduino(int cport_nr);
-void handleOutputs(int serial, udpSocket netsocket);
+void handleOutputs();
 
 
 typedef struct  {
@@ -41,4 +40,6 @@ typedef struct  {
 	float lastSimValue;
 
 } pin_struct;
+
+pin_struct* lineToStruct( char* line);
 #endif
