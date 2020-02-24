@@ -42,7 +42,7 @@ geardown = True
 
 connection = False
 
-
+full = False
 # main loop
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(('', localPort))
@@ -53,11 +53,12 @@ display = pyglet.canvas.get_display()
 screens = display.get_screens()
 if (len(screens) >1):
   screen = screens[1]
+  full = True
 else:
   screen = screens[0]
 
 config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24)
-window = pyglet.window.Window(config=config, resizable=True, width = 1024, height=768, screen=screen, fullscreen=True)
+window = pyglet.window.Window(config=config, resizable=True, width = 1024, height=768, screen=screen, fullscreen=full)
 glEnable(GL_LINE_SMOOTH)
 glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
 glEnable(GL_BLEND)                                  # transparency
