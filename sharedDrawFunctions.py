@@ -62,7 +62,7 @@ def circle_line(x, y, radius,width):
     glEnd();
 
 def line(x1, y1, x2, y2, w):
-    
+
     glLineWidth(w)
     glBegin(GL_LINES)
 
@@ -86,3 +86,17 @@ def arc(x, y, radius,width, startangle, endangle):
         glVertex2f(x + cx, y + cy)
 
     glEnd();
+
+def rect(x, y, dx, dy):
+    pyglet.graphics.draw(4, pyglet.gl.GL_QUADS, ('v2f', [x, y, x+dx, y, x+dx, y+dy, x, y+dy]))
+
+def jas(x, y, size):
+    pyglet.graphics.draw(9, pyglet.gl.GL_POLYGON, ('v2f', [x, y,
+                                                        x-size*0.5, y,
+                                                        x-size*0.1, y+size*0.7,
+                                                        x-size*0.25, y+size*0.7,
+                                                        x, y+size*1.0,
+                                                        x+size*0.25, y+size*0.7,
+                                                        x+size*0.1, y+size*0.7,
+                                                        x+size*0.5, y,
+                                                        x, y]))

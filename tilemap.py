@@ -48,7 +48,9 @@ currentMap = 0
 
 with open("maps.json") as maps_file:
     maps = json.load(maps_file)
-
+with open("waypoints.json") as way_file:
+    waypoints = json.load(way_file)
+waypoints = waypoints["waypoints"]
 #platform = pyglet.window.get_platform()
 #display = platform.get_default_display()
 display = pyglet.canvas.get_display()
@@ -73,9 +75,12 @@ colorGreenIntense = (210.0/255.0, 255.0/255.0, 60.0/255.0, 255.0)
 colorGreenSky = (94.0/255.0, 153.0/255.0, 35.0/255.0, 255.0)
 
 colorRBG = (1.0, 1.0, 1.0, 1.0)
+colorBlack = (0.0, 0.0, 0.0, 1.0)
+
+
 
 mapColor = 0
-mapColors = [colorGreenMedium, colorRBG]
+mapColors = [colorGreenDark,colorGreenMedium, colorRBG, colorGreenIntense, colorGreenLight, colorGreenDark, colorGreenSky]
 fps_display = pyglet.window.FPSDisplay(window=window)
 
 
@@ -113,7 +118,7 @@ def aiscale(a):
     return int(afscale(a))
 
 def createLabels():
-    global speedlabel, smalllabel, speedlabels, altlabels, fuellabel
+    global speedlabel, smalllabel, speedlabels, altlabels, buttonlabel,waylabel
     speedlabel = pyglet.text.Label(str("speed"),
                           font_name='Arial',
                           font_size=aiscale(32),
@@ -128,12 +133,19 @@ def createLabels():
                           x=window.width//2, y=window.height//2,
                           anchor_x='center', anchor_y='center',
                           group=None)
-    fuellabel = pyglet.text.Label(str("speed"),
+    buttonlabel = pyglet.text.Label(str("speed"),
                         font_name='Monospace',
                         font_size=aiscale(25),
                         color=(0,255,0,255),
                         x=window.width//2, y=window.height//2,
                         anchor_x='right', anchor_y='center',
+                        group=None)
+    waylabel = pyglet.text.Label(str("speed"),
+                        font_name='Monospace',
+                        font_size=aiscale(15),
+                        color=(0,255,0,255),
+                        x=window.width//2, y=window.height//2,
+                        anchor_x='left', anchor_y='center',
                         group=None)
     speedlabels = []
     for i in range(10):
@@ -158,7 +170,7 @@ def createLabels():
 createLabels()
 
 def readNetwork():
-    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel, connection
+    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel, connection, lon, lat
     moredata = True
     while moredata:
         try:
@@ -209,6 +221,16 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 gearratio = float(a1)
+            if "A9=" in stringdata:
+                a1 = stringdata.split("A9=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                lon = float(a1)
+            if "A10=" in stringdata:
+                a1 = stringdata.split("A10=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                lat = float(a1)
         except socket.error:
             moredata = False
 def update_frame(x, y):
@@ -268,7 +290,7 @@ def getTileImage(xtile, ytile, zoom):
     filename = "tiles" + os.path.sep + getCurrentMapDir() + os.path.sep + str(zoom) + os.path.sep + str(xtile) + os.path.sep + str(ytile) + ".png"
     directory = "tiles" + os.path.sep + getCurrentMapDir() + os.path.sep + str(zoom) + os.path.sep + str(xtile)
     if os.path.isfile(filename):
-        print ("File exist")
+        #print ("File exist")
         return pyglet.resource.image(filename)
     else:
         print ("Cache miss: " + filename)
@@ -289,15 +311,26 @@ def whereInTile(lat_deg,lon_deg,zoom):
     tileSize = 256
     (xtile, ytile) = deg2num(lat_deg, lon_deg, zoom)
     (xtilef, ytilef) = deg2numfloat(lat_deg, lon_deg, zoom)
-    (lat_n, lon_w) = num2deg(xtile, ytile, zoom)
-    (lat_s, lon_e) = num2deg(xtile+1, ytile+1, zoom)
-    lon_total = lon_e - lon_w
-    lat_total = lat_s - lat_n
+
     ox = (tileSize * (xtilef - xtile))
     oy = tileSize - (tileSize * (ytilef - ytile))
     #print((ox,oy))
     return (ox,oy)
 
+def whereInMap(lat_deg,lon_deg,zoom):
+    global currentTileX, currentTileY
+    tileSize = 256
+    (ox1, oy1) = whereInTile(lat_deg,lon_deg,zoom)
+    (xtile, ytile) = deg2num(lat_deg, lon_deg, zoom)
+    ofx = (currentTileX - xtile) * tileSize
+    ofy = (currentTileY - ytile) * tileSize
+    (cx, cy) = whereInTile(lat,lon,zoom)
+
+    ox = ox1 - cx - ofx
+    oy = oy1 - cy + ofy
+
+    #print((ox,oy))
+    return (ox,oy)
 
 def updateTile(lat_deg,lon_deg,zoom):
     global currentTileX, currentTileY, currentTileZ, tileimage, tileimages
@@ -403,6 +436,7 @@ def drawCompass(x, y, width):
 
 def drawMap(x, y):
     global tileimage, zoomlevel, lon, lat, zoomfactor
+    #print("lon", lon , "lat", lat)
     updateTile(lat,lon,zoomlevel)
     glPushMatrix()
     glMatrixMode(GL_MODELVIEW)
@@ -428,6 +462,59 @@ def drawMap(x, y):
     setColor(colorGreenLight)
     circle_line(0,0,afscale(3), afscale(3))
     glPopMatrix()
+
+def drawWaypoints(x, y):
+    glPushMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+
+    #moving object left and right
+    glTranslatef(x, y , -0.0 ) #x,y,z,
+
+    glRotatef(heading, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
+
+    setColor((1.0,1.0,0.0,1.0))
+    glPushMatrix()
+    glScalef(zoomfactor, zoomfactor, 1)
+    for xx in waypoints:
+        (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
+        circle_line(ox,oy,afscale(3), afscale(3))
+        waylabel.text = xx["text"]
+        waylabel.x = ox + waylabel.font_size/2
+        waylabel.y = oy
+        waylabel.draw()
+    setColor(colorGreenLight)
+    glLineWidth(2)
+    glBegin(GL_LINE_STRIP);
+    for xx in waypoints:
+        (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
+        #circle_line(ox,oy,afscale(3), afscale(3))
+        glVertex2f(ox, oy)
+
+    glEnd();
+    glPopMatrix()
+    #setColor(colorGreenLight)
+    #circle_line(0,0,afscale(10), afscale(3))
+    setColor(colorGreenLight)
+    circle_line(0,0,afscale(3), afscale(3))
+    glPopMatrix()
+
+
+def vertText(x, y, textstr):
+    center = (buttonlabel.font_size+4)*(len(textstr)-1)
+    center = center / 2
+    for i in range(len(textstr)):
+        buttonlabel.text = str(textstr[i])
+        buttonlabel.x = x
+        buttonlabel.y = y + center - (buttonlabel.font_size+4)*i
+        buttonlabel.draw()
+def horiText(x, y, textstr):
+    center = (buttonlabel.font_size+2)
+    center = center / 2
+    buttonlabel.text = str(textstr)
+    buttonlabel.x = x
+    buttonlabel.y = y + center
+    buttonlabel.draw()
 
 
 def set3d():
@@ -478,15 +565,33 @@ def on_draw():
     #set3d()
     set2d()
     drawMap(xfscale(0), yfscale(250))
+    drawWaypoints(xfscale(0), yfscale(250))
     glColor4f(1.0,0,0,1.0)
     fps_display.draw()
     drawCompass(xfscale(0), yfscale(910), afscale(800))
     drawFlightDirector(xfscale(0), yfscale(500))
     drawFlightDirectorLines(xfscale(0), yfscale(500))
+    setColor(colorBlack)
+    rect(0, 0, afscale(25),yfscale(1000))
+    rect(0, yfscale(1000-25), xfscale(1000),yfscale(25))
+    setColor(colorGreenLight)
+    vertText(afscale(25), yfscale(1000)/7*6, "KSTR")
+    vertText(afscale(25), yfscale(1000)/7*5, "VAT")
+    vertText(afscale(25), yfscale(1000)/7*4, "UDAT")
+
+    vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
+    vertText(afscale(25), yfscale(1000)/7*2, "LÄNK")
+    vertText(afscale(25), yfscale(1000)/7*1, "FIX")
 
 
 
-    glColor4f(1.0,0,0,1.0)
+    horiText(xfscale(-200), yfscale(1000-25), "VAP")
+    horiText(xfscale(-100), yfscale(1000-25), "LAND")
+    horiText(xfscale(100), yfscale(1000-25), "ÄPOL")
+    horiText(xfscale(200), yfscale(1000-25), "PMGD")
+
+    setColor(colorGreenLight)
+    jas(xfscale(0), yfscale(250-25), afscale(25))
     #fps_display.draw()
 
     unSet2d()
