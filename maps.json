@@ -1,0 +1,35 @@
+{
+
+  "title" : "MFDCenter",
+
+
+  "maps" : [
+     {
+        "url" : "https://maps.wikimedia.org/osm-intl/",
+        "dir" : "wiki"
+     },
+     {
+        "url" : "https://c.tile.thunderforest.com/transport/",
+        "dir" : "transport"
+     },
+     {
+        "url" : "https://b.tile.openstreetmap.de/",
+        "dir" : "osmde"
+     },
+     {
+        "url" : "http://b.tile.openstreetmap.fr/hot/",
+        "dir" : "hot"
+     },
+     {
+        "url" : "http://c.tile.openstreetmap.fr/osmfr/",
+        "dir" : "osmfr"
+     },
+     {
+        "url" : "http://tile.memomaps.de/tilegen/",
+        "dir" : "transport2"
+     }
+ ]
+
+
+
+}
