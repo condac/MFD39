@@ -32,7 +32,7 @@ currentTileZ = 7
 EXTILES = 2 # extra tiles around center
 
 currentPage = "MAP"
-
+loadingMap = True
 
 tileimages = []
 for i in range(1+EXTILES*2):
@@ -353,16 +353,22 @@ def whereInMap(lat_deg,lon_deg,zoom):
 
 def updateTile(lat_deg,lon_deg,zoom):
     global currentTileX, currentTileY, currentTileZ, tileimage, tileimages
+    global loadingMap
     (xtile, ytile) = deg2num(lat_deg, lon_deg, zoom)
     if (xtile != currentTileX or ytile != currentTileY or zoom != currentTileZ) :
-        print("change tile")
-        currentTileX = xtile
-        currentTileY = ytile
-        currentTileZ = zoom
-        #tileimage = getTileImage(xtile, ytile, zoom)
-        for x in range(1+EXTILES*2):
-            for y in range(1+EXTILES*2):
-                tileimages[x][y] = getTileImage(xtile-EXTILES+x, ytile-EXTILES+y, zoom)
+        if loadingMap == False:
+            loadingMap = True
+            
+        else:
+            print("change tile")
+            loadingMap = False
+            currentTileX = xtile
+            currentTileY = ytile
+            currentTileZ = zoom
+            #tileimage = getTileImage(xtile, ytile, zoom)
+            for x in range(1+EXTILES*2):
+                for y in range(1+EXTILES*2):
+                    tileimages[x][y] = getTileImage(xtile-EXTILES+x, ytile-EXTILES+y, zoom)
 
 
 def drawFlightDirector(x, y):
@@ -606,6 +612,7 @@ def loadPage():
 def pageMap():
     global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16, currentPage
     global mapColor, currentMap, currentTileX
+    global loadingMap
     if key16:
         currentPage = "MENU"
         clearKeys()
@@ -653,6 +660,9 @@ def pageMap():
 
     setColor(colorGreenLight)
     jas(xfscale(0), yfscale(250-25), afscale(25))
+    if loadingMap == True:
+        setColor(colorGreenLight)
+        linebreakText(xfscale(0), yfscale(500), "Laddar karta", checklabel)
     #fps_display.draw()
     fps_display.draw()
     unSet2d()
@@ -793,6 +803,7 @@ def pageChecklist():
 def on_draw():
 
     loadPage()
+
 
 
 
