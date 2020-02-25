@@ -51,8 +51,8 @@ currentMap = 0
 with open("maps.json") as maps_file:
     maps = json.load(maps_file)
 with open("waypoints.json") as way_file:
-    waypoints = json.load(way_file)
-waypoints = waypoints["waypoints"]
+    waypoints1 = json.load(way_file)
+loadedwaypoints = waypoints1
 #platform = pyglet.window.get_platform()
 #display = platform.get_default_display()
 display = pyglet.canvas.get_display()
@@ -358,7 +358,7 @@ def updateTile(lat_deg,lon_deg,zoom):
     if (xtile != currentTileX or ytile != currentTileY or zoom != currentTileZ) :
         if loadingMap == False:
             loadingMap = True
-            
+
         else:
             print("change tile")
             loadingMap = False
@@ -501,7 +501,7 @@ def drawWaypoints(x, y):
     setColor((1.0,1.0,0.0,1.0))
     glPushMatrix()
     glScalef(zoomfactor, zoomfactor, 1)
-    for xx in waypoints:
+    for xx in loadedwaypoints["waypoints"]:
         (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
         circle_line(ox,oy,afscale(3), afscale(3))
         waylabel.text = xx["text"]
@@ -511,7 +511,7 @@ def drawWaypoints(x, y):
     setColor(colorGreenLight)
     glLineWidth(2)
     glBegin(GL_LINE_STRIP);
-    for xx in waypoints:
+    for xx in loadedwaypoints["waypoints"]:
         (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
         #circle_line(ox,oy,afscale(3), afscale(3))
         glVertex2f(ox, oy)
@@ -589,10 +589,10 @@ def set2d():
     # reset modelview
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-
+    glDisable(GL_DEPTH_TEST)
     #glClear(GL_COLOR_BUFFER_BIT)
 def unSet2d():
-
+    glEnable(GL_DEPTH_TEST)
     # load back the projection matrix saved before
     glMatrixMode(GL_PROJECTION)
     glPopMatrix()
@@ -606,8 +606,87 @@ def loadPage():
         pageMenu()
     elif currentPage == "CHECKLIST":
         pageChecklist()
+    elif currentPage == "WAYPOINT":
+        pageWaypoint()
     else:
         pageMenu()
+
+waypointfiles = PathToDict("waypoints"+os.sep)
+
+waypoints = []
+selectedList = 0
+
+for key, item in waypointfiles["items"].items():
+    if item["type"] == 'f':
+        if key.endswith(".json"):
+            list = {}
+            f = open(item['full_path'])
+            list["name"] = key.replace(".json", "")
+            list["text"] = f.read()
+            waypoints.append(list)
+selectedWList = 0
+def pageWaypoint():
+    global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16
+    global currentPage, selectedWList, scrollCheck, loadedwaypoints
+    if key11:
+        currentPage = "MAP"
+        clearKeys()
+    if key16:
+        currentPage = "MENU"
+        clearKeys()
+    if key01:
+        selectedWList = selectedWList - 1
+        scrollCheck = 0
+        if selectedWList < 0:
+            selectedWList = 0
+        clearKeys()
+    if key02:
+        selectedWList = selectedWList + 1
+        scrollCheck = 0
+        if selectedWList >= len(waypoints):
+            selectedWList = len(waypoints)-1
+        clearKeys()
+    if key03:
+        scrollCheck = scrollCheck - 1
+        if scrollCheck < 0:
+            scrollCheck = 0
+        clearKeys()
+    if key04:
+        scrollCheck = scrollCheck + 1
+        clearKeys()
+    #set3d()
+    set2d()
+
+    setColor(colorGreenLight)
+    loadedwaypoints = json.loads(waypoints[selectedWList]["text"])
+
+    linebreakText(xfscale(-200), yfscale(900), waypoints[selectedWList]["name"], checklabel)
+    linebreakText(xfscale(-340), yfscale(800)+scrollCheck*afscale(100), waypoints[selectedWList]["text"], checklabel)
+
+    #drawFlightDirector(xfscale(0), yfscale(500))
+    #drawFlightDirectorLines(xfscale(0), yfscale(500))
+
+    #BUTTONS
+    setColor(colorBlack)
+    rect(0, 0, afscale(25),yfscale(1000))
+    rect(0, yfscale(1000-25), xfscale(1000),yfscale(25))
+    setColor(colorGreenLight)
+    vertText(afscale(25), yfscale(1000)/7*6, "KART")
+    vertText(afscale(25), yfscale(1000)/7*5, "")
+    vertText(afscale(25), yfscale(1000)/7*4, "")
+
+    vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
+    vertText(afscale(25), yfscale(1000)/7*2, "")
+    vertText(afscale(25), yfscale(1000)/7*1, "MENY") #key16
+
+    horiText(xfscale(-250), yfscale(1000-25), "FÖRG") #key01
+    horiText(xfscale(-100), yfscale(1000-25), "NÄSTA") #key02
+    horiText(xfscale(100), yfscale(1000-25), "UPP") #key03
+    horiText(xfscale(200), yfscale(1000-25), "NER") #key04
+
+    unSet2d()
+
+
 
 def pageMap():
     global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16, currentPage
@@ -636,7 +715,7 @@ def pageMap():
     drawWaypoints(xfscale(0), yfscale(250))
     glColor4f(1.0,0,0,1.0)
 
-    drawCompass(xfscale(0), yfscale(910), afscale(800))
+    #drawCompass(xfscale(0), yfscale(910), afscale(800))
     drawFlightDirector(xfscale(0), yfscale(500))
     drawFlightDirectorLines(xfscale(0), yfscale(500))
     setColor(colorBlack)
@@ -662,7 +741,7 @@ def pageMap():
     jas(xfscale(0), yfscale(250-25), afscale(25))
     if loadingMap == True:
         setColor(colorGreenLight)
-        linebreakText(xfscale(0), yfscale(500), "Laddar karta", checklabel)
+        linebreakText(xfscale(-50), yfscale(100), "Laddar karta", checklabel)
     #fps_display.draw()
     fps_display.draw()
     unSet2d()
@@ -674,6 +753,9 @@ def pageMenu():
         clearKeys()
     if key14:
         currentPage = "CHECKLIST"
+        clearKeys()
+    if key15:
+        currentPage = "WAYPOINT"
         clearKeys()
     #set3d()
     set2d()
@@ -694,7 +776,7 @@ def pageMenu():
     vertText(afscale(25), yfscale(1000)/7*4, "")
 
     vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
-    vertText(afscale(25), yfscale(1000)/7*2, "")
+    vertText(afscale(25), yfscale(1000)/7*2, "WAYP")
     vertText(afscale(25), yfscale(1000)/7*1, "")
 
     horiText(xfscale(-200), yfscale(1000-25), "")
@@ -706,36 +788,23 @@ def pageMenu():
 
     unSet2d()
 
-from pathlib import Path
-from stat import *
-def PathToDict(path):
-    st = os.stat(path)
-    result = {}
-    #result['stat'] = st
-    result['full_path'] = path
-    if S_ISDIR(st.st_mode):
-        result['type'] = 'd'
-        result['items'] = {
-            name : PathToDict(path+os.sep+name)
-            for name in os.listdir(path)}
-    else:
-        result['type'] = 'f'
-    return result
+
+
+
 checklistfiles = PathToDict("checklists"+os.sep)
 
 checklists = []
 selectedList = 0
 
 for key, item in checklistfiles["items"].items():
-
     if item["type"] == 'f':
         if key.endswith(".txt"):
-
             list = {}
             f = open(item['full_path'])
             list["name"] = key.replace(".txt", "")
             list["text"] = f.read()
             checklists.append(list)
+
 scrollCheck = 0
 def pageChecklist():
     global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16

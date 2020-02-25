@@ -831,7 +831,7 @@ def on_resize(width, height):
         gluPerspective(45, 1.0 * width / height, 1, balldepth)
         createLabels()
         #glLoadIdentity()
-clearKeys():
+clearKeys()
 keyboard.on_press(keyPressCallback, suppress=False)
 # every 1/10 th get the next frame
 pyglet.clock.schedule(update_frame, 1/10.0)

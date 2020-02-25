@@ -1,6 +1,23 @@
 import math
 import pyglet
+import os
 from pyglet.gl import *
+from pathlib import Path
+from stat import *
+
+def PathToDict(path):
+    st = os.stat(path)
+    result = {}
+    #result['stat'] = st
+    result['full_path'] = path
+    if S_ISDIR(st.st_mode):
+        result['type'] = 'd'
+        result['items'] = {
+            name : PathToDict(path+os.sep+name)
+            for name in os.listdir(path)}
+    else:
+        result['type'] = 'f'
+    return result
 
 def setColor(color):
     (r,g,b,a) = color

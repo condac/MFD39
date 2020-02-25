@@ -6,3 +6,4 @@ Testpanel
 * pip install image
 * pip install imageio
 * pip install scipy
+* pip install pyglet
