@@ -19,7 +19,7 @@ import numpy as np
 import scipy
 import scipy.misc
 import scipy.ndimage.interpolation
-
+import keyboard
 
 #glEnable(GL_TEXTURE_2D)         # enable textures
 #glShadeModel(GL_SMOOTH)         # smooth shading of polygons
@@ -743,7 +743,49 @@ def on_draw():
     fps_display.draw()
 
     unSet2d()
+def pressKey(str2):
+    print(str2)
 
+def clearKeys():
+    global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16
+    key01 = False
+    key02 = False
+    key03 = False
+    key04 = False
+
+    key11 = False
+    key12 = False
+    key13 = False
+    key14 = False
+    key15 = False
+    key16 = False
+
+def keyPressCallback(event):
+    global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16
+    if (event.name == "1"):
+        key01 = True
+    if (event.name == "2"):
+        key02 = True
+    if (event.name == "3"):
+        key03 = True
+    if (event.name == "4"):
+        key04 = True
+
+    if (event.name == "5"):
+        key11 = True
+    if (event.name == "6"):
+        key12 = True
+    if (event.name == "7"):
+        key13 = True
+    if (event.name == "8"):
+        key14 = True
+    if (event.name == "9"):
+        key15 = True
+    if (event.name == "0"):
+        key16 = True
+
+
+    print(event)
 @window.event
 def on_key_press(s,m):
 
@@ -789,6 +831,8 @@ def on_resize(width, height):
         gluPerspective(45, 1.0 * width / height, 1, balldepth)
         createLabels()
         #glLoadIdentity()
+clearKeys():
+keyboard.on_press(keyPressCallback, suppress=False)
 # every 1/10 th get the next frame
 pyglet.clock.schedule(update_frame, 1/10.0)
 pyglet.app.run()

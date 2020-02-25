@@ -1,0 +1,28 @@
+BEFORE TAKE OFF
+1. Doors ? CLOSED/LATCHED
+2. Brakes ? ON
+3. Flight controls ? FREE & CORRECT
+4. Flight instruments ? SET
+5. Fuel valve ? ON
+6. Mixture ? RICH
+7. Trim ? SET FOR TAKEOFF
+8. Throttle ? 1700 RPM
+- Mags ? 125 DROP / 50 DIFF
+- Carb heat ? CHK
+- Engine instr. ? CHK
+- Ammeter ? CHK
+- Suction ? CHK
+- Idle - CHK
+9. Throttle ? BELOW 1000 RPM
+10. Radios ? SET
+11. Transponder ? ON ALT
+12. Lights ? ON
+13. Throttle friction lock ? ADJ
+
+NORMAL TAKEOFF
+1. Wing flaps - 0?
+2. Carb heat ? COLD
+3. Throttle ? FULL OPEN
+4. Elevator ? ROTATE 55 KIAS
+5. Climb Speed ? 70?80 KIAS
+

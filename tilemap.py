@@ -4,6 +4,7 @@ import os.path
 import urllib3
 import socket
 import pyglet
+import keyboard
 from pyglet.gl import *
 from sharedDrawFunctions import *
 
@@ -30,6 +31,7 @@ currentTileZ = 7
 
 EXTILES = 2 # extra tiles around center
 
+currentPage = "MAP"
 
 
 tileimages = []
@@ -118,7 +120,7 @@ def aiscale(a):
     return int(afscale(a))
 
 def createLabels():
-    global speedlabel, smalllabel, speedlabels, altlabels, buttonlabel,waylabel
+    global speedlabel, smalllabel, speedlabels, altlabels, buttonlabel,waylabel,checklabel
     speedlabel = pyglet.text.Label(str("speed"),
                           font_name='Arial',
                           font_size=aiscale(32),
@@ -143,6 +145,13 @@ def createLabels():
     waylabel = pyglet.text.Label(str("speed"),
                         font_name='Monospace',
                         font_size=aiscale(15),
+                        color=(0,255,0,255),
+                        x=window.width//2, y=window.height//2,
+                        anchor_x='left', anchor_y='center',
+                        group=None)
+    checklabel = pyglet.text.Label(str("speed"),
+                        font_name='Monospace',
+                        font_size=aiscale(30),
                         color=(0,255,0,255),
                         x=window.width//2, y=window.height//2,
                         anchor_x='left', anchor_y='center',
@@ -279,16 +288,25 @@ def downloadTile(xtile, ytile, zoom):
     getname = str(zoom) + "/" + str(xtile) + "/" + str(ytile) + ".png"
     url = getCurrentMapURL() + getname
     http = urllib3.PoolManager()
+    print ("download: ", url)
     r = http.request('GET', url)
-
-    f = open(filename,'wb')
-    f.write(r.data)
-    f.close()
-    return
+    print ("download status ", r.status)
+    if (r.status == 200):
+        f = open(filename,'wb')
+        f.write(r.data)
+        f.close()
+        return True
+    else:
+        return False
 
 def getTileImage(xtile, ytile, zoom):
     filename = "tiles" + os.path.sep + getCurrentMapDir() + os.path.sep + str(zoom) + os.path.sep + str(xtile) + os.path.sep + str(ytile) + ".png"
     directory = "tiles" + os.path.sep + getCurrentMapDir() + os.path.sep + str(zoom) + os.path.sep + str(xtile)
+
+
+    if xtile < 0 or ytile < 0:
+        return pyglet.resource.image("0.png")
+
     if os.path.isfile(filename):
         #print ("File exist")
         return pyglet.resource.image(filename)
@@ -296,11 +314,12 @@ def getTileImage(xtile, ytile, zoom):
         print ("Cache miss: " + filename)
         from pathlib import Path
         Path(directory).mkdir(parents=True, exist_ok=True)
-        downloadTile(xtile, ytile, zoom)
-
-        pyglet.resource.reindex()
-
-        return pyglet.resource.image(filename)
+        ok = downloadTile(xtile, ytile, zoom)
+        if ok:
+            pyglet.resource.reindex()
+            return pyglet.resource.image(filename)
+        else:
+            return pyglet.resource.image("0.png")
 def deg2numfloat(lat_deg, lon_deg, zoom):
   lat_rad = math.radians(lat_deg)
   n = 2.0 ** zoom
@@ -516,6 +535,20 @@ def horiText(x, y, textstr):
     buttonlabel.y = y + center
     buttonlabel.draw()
 
+def linebreakText(x, y, textstr, label):
+
+    ii = 0
+    text = textstr.split("\n")
+    for line in text:
+
+
+        label.text = str(line)
+        label.x = x
+        label.y = y - (label.font_size*1.4)*ii
+        label.draw()
+        ii = ii + 1
+
+
 
 def set3d():
     #glClearDepth(0.0)
@@ -559,15 +592,43 @@ def unSet2d():
     glPopMatrix()
 
 
-@window.event
-def on_draw():
+def loadPage():
+    global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16, currentPage
+    if currentPage == "MAP":
+        pageMap()
+    elif currentPage == "MENU":
+        pageMenu()
+    elif currentPage == "CHECKLIST":
+        pageChecklist()
+    else:
+        pageMenu()
 
+def pageMap():
+    global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16, currentPage
+    global mapColor, currentMap, currentTileX
+    if key16:
+        currentPage = "MENU"
+        clearKeys()
+    if key14:
+        currentPage = "CHECKLIST"
+        clearKeys()
+    if key04:
+        clearKeys()
+        mapColor = mapColor + 1
+        if (mapColor >= len(mapColors) ):
+            mapColor = 0
+    if key03:
+        clearKeys()
+        currentMap = currentMap + 1
+        if (currentMap >= len(maps["maps"]) ):
+            currentMap = 0
+        currentTileX = -1
     #set3d()
     set2d()
     drawMap(xfscale(0), yfscale(250))
     drawWaypoints(xfscale(0), yfscale(250))
     glColor4f(1.0,0,0,1.0)
-    fps_display.draw()
+
     drawCompass(xfscale(0), yfscale(910), afscale(800))
     drawFlightDirector(xfscale(0), yfscale(500))
     drawFlightDirectorLines(xfscale(0), yfscale(500))
@@ -581,7 +642,7 @@ def on_draw():
 
     vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
     vertText(afscale(25), yfscale(1000)/7*2, "LÄNK")
-    vertText(afscale(25), yfscale(1000)/7*1, "FIX")
+    vertText(afscale(25), yfscale(1000)/7*1, "MENY")
 
 
 
@@ -593,8 +654,147 @@ def on_draw():
     setColor(colorGreenLight)
     jas(xfscale(0), yfscale(250-25), afscale(25))
     #fps_display.draw()
+    fps_display.draw()
+    unSet2d()
+
+def pageMenu():
+    global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16, currentPage
+    if key11:
+        currentPage = "MAP"
+        clearKeys()
+    if key14:
+        currentPage = "CHECKLIST"
+        clearKeys()
+    #set3d()
+    set2d()
+
+    glColor4f(1.0,0,0,1.0)
+    fps_display.draw()
+
+    drawFlightDirector(xfscale(0), yfscale(500))
+    drawFlightDirectorLines(xfscale(0), yfscale(500))
+
+    #BUTTONS
+    setColor(colorBlack)
+    rect(0, 0, afscale(25),yfscale(1000))
+    rect(0, yfscale(1000-25), xfscale(1000),yfscale(25))
+    setColor(colorGreenLight)
+    vertText(afscale(25), yfscale(1000)/7*6, "KART")
+    vertText(afscale(25), yfscale(1000)/7*5, "")
+    vertText(afscale(25), yfscale(1000)/7*4, "")
+
+    vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
+    vertText(afscale(25), yfscale(1000)/7*2, "")
+    vertText(afscale(25), yfscale(1000)/7*1, "")
+
+    horiText(xfscale(-200), yfscale(1000-25), "")
+    horiText(xfscale(-100), yfscale(1000-25), "")
+    horiText(xfscale(100), yfscale(1000-25), "")
+    horiText(xfscale(200), yfscale(1000-25), "")
+
+
 
     unSet2d()
+
+from pathlib import Path
+from stat import *
+def PathToDict(path):
+    st = os.stat(path)
+    result = {}
+    #result['stat'] = st
+    result['full_path'] = path
+    if S_ISDIR(st.st_mode):
+        result['type'] = 'd'
+        result['items'] = {
+            name : PathToDict(path+os.sep+name)
+            for name in os.listdir(path)}
+    else:
+        result['type'] = 'f'
+    return result
+checklistfiles = PathToDict("checklists"+os.sep)
+
+checklists = []
+selectedList = 0
+
+for key, item in checklistfiles["items"].items():
+
+    if item["type"] == 'f':
+        if key.endswith(".txt"):
+
+            list = {}
+            f = open(item['full_path'])
+            list["name"] = key.replace(".txt", "")
+            list["text"] = f.read()
+            checklists.append(list)
+scrollCheck = 0
+def pageChecklist():
+    global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16
+    global currentPage, selectedList, scrollCheck
+    if key11:
+        currentPage = "MAP"
+        clearKeys()
+    if key16:
+        currentPage = "MENU"
+        clearKeys()
+    if key01:
+        selectedList = selectedList - 1
+        scrollCheck = 0
+        if selectedList < 0:
+            selectedList = 0
+        clearKeys()
+    if key02:
+        selectedList = selectedList + 1
+        scrollCheck = 0
+        if selectedList >= len(checklists):
+            selectedList = len(checklists)-1
+        clearKeys()
+    if key03:
+        scrollCheck = scrollCheck - 1
+        if scrollCheck < 0:
+            scrollCheck = 0
+        clearKeys()
+    if key04:
+        scrollCheck = scrollCheck + 1
+        clearKeys()
+    #set3d()
+    set2d()
+
+    setColor(colorGreenLight)
+
+    linebreakText(xfscale(-200), yfscale(900), checklists[selectedList]["name"], checklabel)
+    linebreakText(xfscale(-340), yfscale(800)+scrollCheck*afscale(100), checklists[selectedList]["text"], checklabel)
+
+    #drawFlightDirector(xfscale(0), yfscale(500))
+    #drawFlightDirectorLines(xfscale(0), yfscale(500))
+
+    #BUTTONS
+    setColor(colorBlack)
+    rect(0, 0, afscale(25),yfscale(1000))
+    rect(0, yfscale(1000-25), xfscale(1000),yfscale(25))
+    setColor(colorGreenLight)
+    vertText(afscale(25), yfscale(1000)/7*6, "KART")
+    vertText(afscale(25), yfscale(1000)/7*5, "")
+    vertText(afscale(25), yfscale(1000)/7*4, "")
+
+    vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
+    vertText(afscale(25), yfscale(1000)/7*2, "")
+    vertText(afscale(25), yfscale(1000)/7*1, "MENY") #key16
+
+    horiText(xfscale(-250), yfscale(1000-25), "FÖRG") #key01
+    horiText(xfscale(-100), yfscale(1000-25), "NÄSTA") #key02
+    horiText(xfscale(100), yfscale(1000-25), "UPP") #key03
+    horiText(xfscale(200), yfscale(1000-25), "NER") #key04
+
+    unSet2d()
+
+
+
+@window.event
+def on_draw():
+
+    loadPage()
+
+
 
 @window.event
 def on_key_press(s,m):
@@ -663,12 +863,56 @@ def on_key_press(s,m):
             geardown = False
         else:
             geardown = True
-    if s == pyglet.window.key.F5:
-        totalFuel = rawFuel
-        print(rawFuel)
-    if s == pyglet.window.key.F4:
+
+    if s == pyglet.window.key.F12:
         window.set_fullscreen(not window.fullscreen)
 
+def pressKey(str2):
+    print(str2)
+
+def clearKeys():
+    global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16
+    key01 = False
+    key02 = False
+    key03 = False
+    key04 = False
+
+    key11 = False
+    key12 = False
+    key13 = False
+    key14 = False
+    key15 = False
+    key16 = False
+
+def keyPressCallback(event):
+    global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16
+    if (event.name == "f1"):
+        key01 = True
+    if (event.name == "f2"):
+        key02 = True
+    if (event.name == "f3"):
+        key03 = True
+    if (event.name == "f4"):
+        key04 = True
+
+    if (event.name == "f5"):
+        key11 = True
+    if (event.name == "f6"):
+        key12 = True
+    if (event.name == "f7"):
+        key13 = True
+    if (event.name == "f8"):
+        key14 = True
+    if (event.name == "f9"):
+        key15 = True
+    if (event.name == "f10"):
+        key16 = True
+
+
+    print(event)
+def keyPressCallback5(event, b1, b2, b3, b4):
+
+    keyPressCallback(event)
 @window.event
 def on_resize(width, height):
         print ('on resize')
@@ -684,11 +928,22 @@ def on_resize(width, height):
         #glLoadIdentity()
 
 
-test = deg2num(58.0, 16.0, zoomlevel)
-print (test)
-tileimage = getTileImage(test[0],test[1], zoomlevel)
-hej = num2deg(test[0],test[1], zoomlevel)
-print (hej)
+#keyboard.add_hotkey("F1", keyPressCallback5, args=("key01"))
+#keyboard.add_hotkey("F2", keyPressCallback5, args=("key02"))
+#keyboard.add_hotkey("F3", keyPressCallback5, args=("key03"))
+#keyboard.add_hotkey("F4", keyPressCallback5, args=("key04"))
+
+#keyboard.add_hotkey("F5", keyPressCallback5, args=("key11"))
+#keyboard.add_hotkey("F6", keyPressCallback5, args=("key12"))
+#keyboard.add_hotkey("F7", keyPressCallback5, args=("key13"))
+#keyboard.add_hotkey("F8", keyPressCallback5, args=("key14"))
+#keyboard.add_hotkey("F9", keyPressCallback5, args=("key15"))
+#keyboard.add_hotkey("F10", keyPressCallback5, args=("key16"))
+
+
+clearKeys()
+keyboard.on_press(keyPressCallback, suppress=False)
+
 # every 1/10 th get the next frame
 pyglet.clock.schedule(update_frame, 1/10.0)
 pyglet.app.run()

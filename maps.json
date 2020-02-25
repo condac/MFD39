@@ -4,6 +4,11 @@
 
 
   "maps" : [
+
+     {
+        "url" : "http://46.59.33.179/dark/",
+        "dir" : "burnsDark"
+     },
      {
         "url" : "https://maps.wikimedia.org/osm-intl/",
         "dir" : "wiki"

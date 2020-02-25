@@ -1,0 +1,24 @@
+BEFORE STARTING ENGINE
+1. Pre-flight ? COMPLETE
+2. Seats, belts, harnesses ? ON
+3. Fuel shutoff valve ? BOTH
+4. Avionics switch - OFF
+5. Electrical Equipment ? OFF
+6. Circuit breakers ? CHECK IN
+7. Brakes ? TEST / SET
+STARTING ENGINE
+1. Mixture ? RICH
+2. Carb heat ? COLD
+3. Master switch - ON
+4. Beacon Light ? ON
+5. Prime ? AS REQUIRED
+6. Throttle ? OPEN 1/8?
+7. Prop Area ? CLEAR
+8. Ignition ? START
+9. Oil Pressure ? CHK
+10. Avionics switch - ON
+11. Radio (s) ? ON/SET
+12. Transponder ? ON / ALT
+13. Wing Flaps ? UP
+14. Mixture ? LEAN
+15. READY TO TAXI 

@@ -1,0 +1,52 @@
+PRE-FLIGHT INSPECTION
+CABIN
+1. Documents ? A.R.R.O.W.
+2. Control Lock ? REMOVE
+3. Ignition Switch ? OFF
+4. Avionics Switch - OFF
+5. Master Switch ? ON
+6. Flaps ? DOWN
+7. Fuel Quantity ? CHECK
+8. Master Switch ? OFF
+9. Fuel Valve ? ON BOTH
+EMPENNAGE
+1. Empennage surface ? CHK
+2. Baggage door - CHK
+3. Horizontal stabilizer ? SECURE
+4. Elevator ? FREE &SECURE
+5. Rudder ? FREE & SECURE
+6. Tail tie-down ? DISCONNECT
+7. Lights & Antenna ? CHK
+8. ELT Antenna ? CHK
+RIGHT WING
+1. Flap ? FREE & SECURE
+2. Aileron ? FREE & SECURE
+3. Lights & Wingtip ? CHK
+4. Leading edge ? CHK
+5. Wing tie-down ? DISCONNECT
+6. Main wheel tire & brake ? CHK
+7. Fuel quick drain ? SAMPLE
+8. Fuel quantity ? VISUAL CHK
+9. Fuel filler cap ? SECURE
+NOSE
+1. Engine oil ? CHK LEVEL (Min 6 qts)
+2. Strainer drain ? SAMPLE/CHK ( Fuel Selector
+Drain valve Sample/CHK P Model 172)
+3. Prop/Spinner ? CHK
+4. Air filter ? CHK CLEAR
+5. Landing light ? CHK
+6. Nose strut/tire ? CHK
+7. Static port ? CHK OPEN
+LEFT WING
+1. Main wheel tire & brake ? CHK
+2. Fuel quick drain ? SAMPLE
+3. Fuel quantity ? VISUALLY CHK
+4. Fuel filler cap ? SECURE
+5. Pitot tube cover ? REMOVE/CHK
+6. Stall warning opening ? CHK
+7. Fuel tank vent ? OPEN
+8. Wing tie-down ? DISCONNECT
+9. Leading edge ? CHK
+10. Lights/Wingtip ? CHK
+11. Aileron ? FREE & SECURE
+12. Flaps ? FREE & SECURE
