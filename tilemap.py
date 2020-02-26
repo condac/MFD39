@@ -20,8 +20,9 @@ heading = 0.0
 tilt = 0.0
 rota = 0.0
 
-speed = 0
-altitude = 0
+speed = 0.0
+altitude = 0.0
+groundspeed = 100.0
 
 connection = False
 
@@ -33,6 +34,8 @@ EXTILES = 2 # extra tiles around center
 
 currentPage = "MAP"
 loadingMap = True
+
+currentWaypoint = 0
 
 tileimages = []
 for i in range(1+EXTILES*2):
@@ -179,7 +182,8 @@ def createLabels():
 createLabels()
 
 def readNetwork():
-    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel, connection, lon, lat
+    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
+    global rawFuel, totalFuel, connection, lon, lat, groundspeed
     moredata = True
     while moredata:
         try:
@@ -240,6 +244,11 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 lat = float(a1)
+            if "A11=" in stringdata:
+                a1 = stringdata.split("A11=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                groundspeed = float(a1)
         except socket.error:
             moredata = False
 def update_frame(x, y):
@@ -249,6 +258,7 @@ def update_frame(x, y):
         fakevalues()
     readNetwork()
 
+    nextWaypoint()
     if (gearratio >=0.9):
         geardown = True
     else:
@@ -525,6 +535,70 @@ def drawWaypoints(x, y):
     glPopMatrix()
 
 
+
+def nextWaypoint(manual = False):
+    global lat, lon, currentWaypoint
+    cur = loadedwaypoints["waypoints"][currentWaypoint]
+    distance = getDistanceGPS(cur["lat"], cur["lon"], lat,lon)
+    if (distance < 1.0 or manual == True):
+        currentWaypoint = currentWaypoint +1
+        if currentWaypoint >= len(cur) :
+            currentWaypoint = 0
+
+def drawWaypointsInfo():
+    global lat, lon, currentWaypoint, checklabel, groundspeed
+    lineoff = 0
+    for xx in loadedwaypoints["waypoints"]:
+        if (currentWaypoint == lineoff):
+            checklabel.color = (255,255,0,255)
+            checklabel.text = ">"
+            checklabel.x = afscale(40)
+            checklabel.y = yfscale(900) - checklabel.font_size*1.5*lineoff
+            checklabel.draw()
+        else:
+            checklabel.color = (0,200,0,255)
+        checklabel.text = " " + xx["text"]
+        checklabel.x = afscale(40)
+        checklabel.y = yfscale(900) - checklabel.font_size*1.5*lineoff
+        checklabel.draw()
+        lineoff = lineoff + 1
+
+    # Riktning och avstånd till nästa
+    cur = loadedwaypoints["waypoints"][currentWaypoint]
+    distance = getDistanceGPS(cur["lat"], cur["lon"], lat,lon)
+    #head = getHeadingGPS( lat,lon, cur["lat"], cur["lon"])
+    head2 = getHeadingGPS2( lat,lon, cur["lat"], cur["lon"])
+    if (groundspeed != 0.0):
+        etatime = (distance*1000/groundspeed)/60
+        eta = str(int(etatime)) + "m"
+    else:
+        eta = "N/A"
+
+    buttonlabel.color = (0,255,0,255)
+    buttonlabel.text = cur["text"]
+    buttonlabel.x = window.width-buttonlabel.font_size
+    buttonlabel.y = yfscale(10) + buttonlabel.font_size*1.5*4
+    buttonlabel.draw()
+
+    buttonlabel.color = (0,255,0,255)
+    buttonlabel.text = "H"+str(int(head2))
+    buttonlabel.x = window.width-buttonlabel.font_size
+    buttonlabel.y = yfscale(10) + buttonlabel.font_size*1.5*3
+    buttonlabel.draw()
+
+    buttonlabel.color = (0,255,0,255)
+    buttonlabel.text = str(int(distance)) + "km"
+    buttonlabel.x = window.width-buttonlabel.font_size
+    buttonlabel.y = yfscale(10) + buttonlabel.font_size*1.5*2
+    buttonlabel.draw()
+
+    buttonlabel.color = (0,255,0,255)
+    buttonlabel.text = "ETA " + eta
+    buttonlabel.x = window.width-buttonlabel.font_size
+    buttonlabel.y = yfscale(10) + buttonlabel.font_size*1.5*1
+    buttonlabel.draw()
+
+
 def vertText(x, y, textstr):
     center = (buttonlabel.font_size+4)*(len(textstr)-1)
     center = center / 2
@@ -709,10 +783,14 @@ def pageMap():
         if (currentMap >= len(maps["maps"]) ):
             currentMap = 0
         currentTileX = -1
+    if key01:
+        clearKeys()
+        nextWaypoint(manual=True)
     #set3d()
     set2d()
     drawMap(xfscale(0), yfscale(250))
     drawWaypoints(xfscale(0), yfscale(250))
+    drawWaypointsInfo()
     glColor4f(1.0,0,0,1.0)
 
     #drawCompass(xfscale(0), yfscale(910), afscale(800))
@@ -732,7 +810,7 @@ def pageMap():
 
 
 
-    horiText(xfscale(-200), yfscale(1000-25), "VAP")
+    horiText(xfscale(-200), yfscale(1000-25), "STEG") # key01
     horiText(xfscale(-100), yfscale(1000-25), "LAND")
     horiText(xfscale(100), yfscale(1000-25), "ÄPOL")
     horiText(xfscale(200), yfscale(1000-25), "PMGD")

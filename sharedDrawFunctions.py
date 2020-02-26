@@ -4,6 +4,8 @@ import os
 from pyglet.gl import *
 from pathlib import Path
 from stat import *
+from math import sin, cos, sqrt, atan2, radians
+import numpy as np
 
 def PathToDict(path):
     st = os.stat(path)
@@ -19,9 +21,58 @@ def PathToDict(path):
         result['type'] = 'f'
     return result
 
+def getDistanceGPS(lat1,lon1, lat2, lon2):
+
+
+    # approximate radius of earth in km
+    R = 6373.0
+
+    lat1 = radians(lat1)
+    lon1 = radians(lon1)
+    lat2 = radians(lat2)
+    lon2 = radians(lon2)
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    distance = R * c
+
+    #print("Result:", distance)
+    return distance
+
+def getHeadingGPS(lat1,lon1,lat2,lon2):
+    dLon = lon2 - lon1;
+    y = math.sin(dLon) * math.cos(lat2);
+    x = math.cos(lat1)*math.sin(lat2) - math.sin(lat1)*math.cos(lat2)*math.cos(dLon);
+    brng = np.rad2deg(math.atan2(y, x));
+    #if brng < 0:
+    #    brng+= 360
+    return brng
+
+def getHeadingGPS2(lat1,lon1,lat2,lon2):
+    teta1 = np.deg2rad(lat1)
+    teta2 = np.deg2rad(lat2)
+    delta1 = np.deg2rad(lat2-lat1)
+    delta2 = np.deg2rad(lon2-lon1)
+
+
+    y = sin(delta2) * cos(teta2)
+    x = cos(teta1)*sin(teta2) - sin(teta1)*cos(teta2)*cos(delta2)
+    brng = atan2(y,x)
+    brng = np.rad2deg(brng)
+    brng =  brng + 360
+    if brng > 360:
+        brng-= 360
+    return brng
+
+
 def setColor(color):
     (r,g,b,a) = color
     glColor4f(r, g, b, a)
+    return (int(r*255), int(g*255), int(b*255), int(a*255))
 
 def pie_circle(x, y, radius, percent):
 
