@@ -31,6 +31,7 @@ tilt = 0.0
 rota = 0.0
 
 speed = 0
+machspeed = 0.0
 altitude = 0
 fuel = 1.0
 totalFuel = 1700.0
@@ -196,6 +197,7 @@ balldepth = 22.0
 
 def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel, connection
+    global machspeed
     moredata = True
     while moredata:
         try:
@@ -246,6 +248,11 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 gearratio = float(a1)
+            if "A12=" in stringdata:
+                a1 = stringdata.split("A12=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                machspeed = float(a1)
         except socket.error:
             moredata = False
 def update_frame(x, y):
@@ -296,7 +303,7 @@ def draw_sphere():
     glTranslatef(100.0, 0.0, 0.0)
 
 def fakevalues():
-    global speed
+    global speed, machspeed
     speed = speed +1
     if speed > 1000:
         speed = 900
@@ -304,6 +311,7 @@ def fakevalues():
     altitude = altitude +1
     if altitude > 50000:
         altitude = 900
+    machspeed = speed*2/1000
 
 
 
@@ -320,7 +328,7 @@ def drawAtext(x,y,r1,text,angle, w=1):
 
 def draw_speed():
 
-    global speed, speedlabels
+    global speed, speedlabels, machspeed
     maxspeed = 1000
     size = afscale(350/2)
     size2 = afscale(128/2)
@@ -333,7 +341,10 @@ def draw_speed():
     setColor(colorGreenMedium)
     #glTranslatef(0.0, 0.0 , -0.2 )
 
-    speedlabel.text = str(int(speed) )
+    if (machspeed > 0.5) :
+        speedlabel.text = "M{:0.2f}".format(machspeed)
+    else:
+        speedlabel.text = str(int(speed) )
     speedlabel.x = x
     speedlabel.y = y
     glDisable(GL_DEPTH_TEST)
