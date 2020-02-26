@@ -8,15 +8,16 @@ import keyboard
 from pyglet.gl import *
 from sharedDrawFunctions import *
 
-zoomlevel = 8
+zoomlevel = 9
 zoomfactor = 1.5
 gearratio = 0.0
 geardown = True
 
-lon = 16.92
-lat = 58.7761015
+#58.402261, 15.525880
+lon = 15.525880
+lat = 58.402261
 
-heading = 0.0
+heading = 80.0
 tilt = 0.0
 rota = 0.0
 
@@ -495,7 +496,7 @@ def drawMap(x, y):
     #setColor(colorGreenLight)
     #circle_line(0,0,afscale(10), afscale(3))
     setColor(colorGreenLight)
-    circle_line(0,0,afscale(3), afscale(3))
+    #circle_line(0,0,afscale(3), afscale(3))
     glPopMatrix()
 
 def drawWaypoints(x, y):
@@ -528,10 +529,7 @@ def drawWaypoints(x, y):
 
     glEnd();
     glPopMatrix()
-    #setColor(colorGreenLight)
-    #circle_line(0,0,afscale(10), afscale(3))
-    setColor(colorGreenLight)
-    circle_line(0,0,afscale(3), afscale(3))
+    
     glPopMatrix()
 
 
