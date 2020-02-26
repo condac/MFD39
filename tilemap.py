@@ -548,9 +548,9 @@ def nextWaypoint(manual = False):
     global lat, lon, currentWaypoint
     cur = loadedwaypoints["waypoints"][currentWaypoint]
     distance = getDistanceGPS(cur["lat"], cur["lon"], lat,lon)
-    if (distance < 1.0 or manual == True):
+    if (distance < 2.0 or manual == True):
         currentWaypoint = currentWaypoint +1
-        if currentWaypoint >= len(cur) :
+        if currentWaypoint >= len(loadedwaypoints["waypoints"]) :
             currentWaypoint = 0
 
 def drawWaypointsInfo():
@@ -576,9 +576,13 @@ def drawWaypointsInfo():
     distance = getDistanceGPS(cur["lat"], cur["lon"], lat,lon)
     #head = getHeadingGPS( lat,lon, cur["lat"], cur["lon"])
     head2 = getHeadingGPS2( lat,lon, cur["lat"], cur["lon"])
+    eta = 0
     if (groundspeed != 0.0):
         etatime = (distance*1000/groundspeed)/60
-        eta = str(int(etatime)) + "m"
+        if (etatime < 1000):
+            eta = str(int(etatime)) + "m"
+        else:
+            eta = "N/A"
     else:
         eta = "N/A"
 
