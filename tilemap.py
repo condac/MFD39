@@ -59,15 +59,18 @@ with open("waypoints.json") as way_file:
 loadedwaypoints = waypoints1
 #platform = pyglet.window.get_platform()
 #display = platform.get_default_display()
+
+full = False
 display = pyglet.canvas.get_display()
 screens = display.get_screens()
 if (len(screens) >1):
   screen = screens[0]
+  full = True
 else:
   screen = screens[0]
 
 config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24)
-window = pyglet.window.Window(config=config, resizable=True, width = 768, height=1024, screen=screen, fullscreen=False)
+window = pyglet.window.Window(config=config, resizable=True, width = 768, height=1024, screen=screen, fullscreen=full)
 glEnable(GL_LINE_SMOOTH)
 glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
 glEnable(GL_BLEND)                                  # transparency
