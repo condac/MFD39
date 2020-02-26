@@ -7,3 +7,5 @@ Testpanel
 * pip install imageio
 * pip install scipy
 * pip install pyglet
+* pip install urllib3
+* pip install keyboard

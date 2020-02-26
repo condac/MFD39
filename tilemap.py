@@ -124,7 +124,7 @@ def aiscale(a):
     return int(afscale(a))
 
 def createLabels():
-    global speedlabel, smalllabel, speedlabels, altlabels, buttonlabel,waylabel,checklabel
+    global speedlabel, smalllabel, speedlabels, altlabels, buttonlabel,waylabel,checklabel, rightlabel
     speedlabel = pyglet.text.Label(str("speed"),
                           font_name='Arial',
                           font_size=aiscale(32),
@@ -144,6 +144,13 @@ def createLabels():
                         font_size=aiscale(25),
                         color=(0,255,0,255),
                         x=window.width//2, y=window.height//2,
+                        anchor_x='center', anchor_y='center',
+                        group=None)
+    rightlabel = pyglet.text.Label(str("speed"),
+                        font_name='Monospace',
+                        font_size=aiscale(25),
+                        color=(0,255,0,255),
+                        x=window.width//2, y=window.height//2,
                         anchor_x='right', anchor_y='center',
                         group=None)
     waylabel = pyglet.text.Label(str("speed"),
@@ -154,7 +161,7 @@ def createLabels():
                         anchor_x='left', anchor_y='center',
                         group=None)
     checklabel = pyglet.text.Label(str("speed"),
-                        font_name='Monospace',
+                        font_name='Courier New',
                         font_size=aiscale(30),
                         color=(0,255,0,255),
                         x=window.width//2, y=window.height//2,
@@ -311,7 +318,7 @@ def downloadTile(xtile, ytile, zoom):
         return False
 
 def getTileImage(xtile, ytile, zoom):
-    filename = "tiles" + os.path.sep + getCurrentMapDir() + os.path.sep + str(zoom) + os.path.sep + str(xtile) + os.path.sep + str(ytile) + ".png"
+    filename = "tiles" + "/" + getCurrentMapDir() + "/" + str(zoom) + "/" + str(xtile) + "/" + str(ytile) + ".png"
     directory = "tiles" + os.path.sep + getCurrentMapDir() + os.path.sep + str(zoom) + os.path.sep + str(xtile)
 
 
@@ -529,7 +536,7 @@ def drawWaypoints(x, y):
 
     glEnd();
     glPopMatrix()
-    
+
     glPopMatrix()
 
 
@@ -572,29 +579,29 @@ def drawWaypointsInfo():
     else:
         eta = "N/A"
 
-    buttonlabel.color = (0,255,0,255)
-    buttonlabel.text = cur["text"]
-    buttonlabel.x = window.width-buttonlabel.font_size
-    buttonlabel.y = yfscale(10) + buttonlabel.font_size*1.5*4
-    buttonlabel.draw()
+    rightlabel.color = (0,255,0,255)
+    rightlabel.text = cur["text"]
+    rightlabel.x = window.width-rightlabel.font_size
+    rightlabel.y = yfscale(10) + rightlabel.font_size*1.5*4
+    rightlabel.draw()
 
-    buttonlabel.color = (0,255,0,255)
-    buttonlabel.text = "H"+str(int(head2))
-    buttonlabel.x = window.width-buttonlabel.font_size
-    buttonlabel.y = yfscale(10) + buttonlabel.font_size*1.5*3
-    buttonlabel.draw()
+    rightlabel.color = (0,255,0,255)
+    rightlabel.text = "H"+str(int(head2))
+    rightlabel.x = window.width-rightlabel.font_size
+    rightlabel.y = yfscale(10) + rightlabel.font_size*1.5*3
+    rightlabel.draw()
 
-    buttonlabel.color = (0,255,0,255)
-    buttonlabel.text = str(int(distance)) + "km"
-    buttonlabel.x = window.width-buttonlabel.font_size
-    buttonlabel.y = yfscale(10) + buttonlabel.font_size*1.5*2
-    buttonlabel.draw()
+    rightlabel.color = (0,255,0,255)
+    rightlabel.text = str(int(distance)) + "km"
+    rightlabel.x = window.width-rightlabel.font_size
+    rightlabel.y = yfscale(10) + rightlabel.font_size*1.5*2
+    rightlabel.draw()
 
-    buttonlabel.color = (0,255,0,255)
-    buttonlabel.text = "ETA " + eta
-    buttonlabel.x = window.width-buttonlabel.font_size
-    buttonlabel.y = yfscale(10) + buttonlabel.font_size*1.5*1
-    buttonlabel.draw()
+    rightlabel.color = (0,255,0,255)
+    rightlabel.text = "ETA " + eta
+    rightlabel.x = window.width-rightlabel.font_size
+    rightlabel.y = yfscale(10) + rightlabel.font_size*1.5*1
+    rightlabel.draw()
 
 
 def vertText(x, y, textstr):
@@ -743,13 +750,13 @@ def pageWaypoint():
     rect(0, 0, afscale(25),yfscale(1000))
     rect(0, yfscale(1000-25), xfscale(1000),yfscale(25))
     setColor(colorGreenLight)
-    vertText(afscale(25), yfscale(1000)/7*6, "KART")
-    vertText(afscale(25), yfscale(1000)/7*5, "")
-    vertText(afscale(25), yfscale(1000)/7*4, "")
+    vertText(afscale(25/2), yfscale(1000)/7*6, "KART")
+    vertText(afscale(25/2), yfscale(1000)/7*5, "")
+    vertText(afscale(25/2), yfscale(1000)/7*4, "")
 
-    vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
-    vertText(afscale(25), yfscale(1000)/7*2, "")
-    vertText(afscale(25), yfscale(1000)/7*1, "MENY") #key16
+    vertText(afscale(25/2), yfscale(1000)/7*3, "CHKL")
+    vertText(afscale(25/2), yfscale(1000)/7*2, "")
+    vertText(afscale(25/2), yfscale(1000)/7*1, "MENY") #key16
 
     horiText(xfscale(-250), yfscale(1000-25), "FÖRG") #key01
     horiText(xfscale(-100), yfscale(1000-25), "NÄSTA") #key02
@@ -798,13 +805,13 @@ def pageMap():
     rect(0, 0, afscale(25),yfscale(1000))
     rect(0, yfscale(1000-25), xfscale(1000),yfscale(25))
     setColor(colorGreenLight)
-    vertText(afscale(25), yfscale(1000)/7*6, "KSTR")
-    vertText(afscale(25), yfscale(1000)/7*5, "VAT")
-    vertText(afscale(25), yfscale(1000)/7*4, "UDAT")
+    vertText(afscale(25/2), yfscale(1000)/7*6, "KSTR")
+    vertText(afscale(25/2), yfscale(1000)/7*5, "VAT")
+    vertText(afscale(25/2), yfscale(1000)/7*4, "UDAT")
 
-    vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
-    vertText(afscale(25), yfscale(1000)/7*2, "LÄNK")
-    vertText(afscale(25), yfscale(1000)/7*1, "MENY")
+    vertText(afscale(25/2), yfscale(1000)/7*3, "CHKL")
+    vertText(afscale(25/2), yfscale(1000)/7*2, "LÄNK")
+    vertText(afscale(25/2), yfscale(1000)/7*1, "MENY")
 
 
 
@@ -847,13 +854,13 @@ def pageMenu():
     rect(0, 0, afscale(25),yfscale(1000))
     rect(0, yfscale(1000-25), xfscale(1000),yfscale(25))
     setColor(colorGreenLight)
-    vertText(afscale(25), yfscale(1000)/7*6, "KART")
-    vertText(afscale(25), yfscale(1000)/7*5, "")
-    vertText(afscale(25), yfscale(1000)/7*4, "")
+    vertText(afscale(25/2), yfscale(1000)/7*6, "KART")
+    vertText(afscale(25/2), yfscale(1000)/7*5, "")
+    vertText(afscale(25/2), yfscale(1000)/7*4, "")
 
-    vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
-    vertText(afscale(25), yfscale(1000)/7*2, "WAYP")
-    vertText(afscale(25), yfscale(1000)/7*1, "")
+    vertText(afscale(25/2), yfscale(1000)/7*3, "CHKL")
+    vertText(afscale(25/2), yfscale(1000)/7*2, "WAYP")
+    vertText(afscale(25/2), yfscale(1000)/7*1, "")
 
     horiText(xfscale(-200), yfscale(1000-25), "")
     horiText(xfscale(-100), yfscale(1000-25), "")
@@ -927,13 +934,13 @@ def pageChecklist():
     rect(0, 0, afscale(25),yfscale(1000))
     rect(0, yfscale(1000-25), xfscale(1000),yfscale(25))
     setColor(colorGreenLight)
-    vertText(afscale(25), yfscale(1000)/7*6, "KART")
-    vertText(afscale(25), yfscale(1000)/7*5, "")
-    vertText(afscale(25), yfscale(1000)/7*4, "")
+    vertText(afscale(25/2), yfscale(1000)/7*6, "KART")
+    vertText(afscale(25/2), yfscale(1000)/7*5, "")
+    vertText(afscale(25/2), yfscale(1000)/7*4, "")
 
-    vertText(afscale(25), yfscale(1000)/7*3, "CHKL")
-    vertText(afscale(25), yfscale(1000)/7*2, "")
-    vertText(afscale(25), yfscale(1000)/7*1, "MENY") #key16
+    vertText(afscale(25/2), yfscale(1000)/7*3, "CHKL")
+    vertText(afscale(25/2), yfscale(1000)/7*2, "")
+    vertText(afscale(25/2), yfscale(1000)/7*1, "MENY") #key16
 
     horiText(xfscale(-250), yfscale(1000-25), "FÖRG") #key01
     horiText(xfscale(-100), yfscale(1000-25), "NÄSTA") #key02

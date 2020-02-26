@@ -156,8 +156,13 @@ def arc(x, y, radius,width, startangle, endangle):
     glEnd();
 
 def rect(x, y, dx, dy):
-    pyglet.graphics.draw(4, pyglet.gl.GL_QUADS, ('v2f', [x, y, x+dx, y, x+dx, y+dy, x, y+dy]))
-
+    glBegin(GL_QUADS)                      # Draw A Quad
+    glVertex2f( x   , y+dy)              # Top Left
+    glVertex2f( x+dx, y+dy)              # Top Right
+    glVertex2f( x+dx, y)              # Bottom Right
+    glVertex2f( x   , y)              # Bottom Left
+    glEnd()
+    
 def jas(x, y, size):
     pyglet.graphics.draw(9, pyglet.gl.GL_POLYGON, ('v2f', [x, y,
                                                         x-size*0.5, y,
