@@ -161,7 +161,7 @@ def createLabels():
                         anchor_x='left', anchor_y='center',
                         group=None)
     checklabel = pyglet.text.Label(str("speed"),
-                        font_name='Courier New',
+                        font_name='Consolas',
                         font_size=aiscale(30),
                         color=(0,255,0,255),
                         x=window.width//2, y=window.height//2,
