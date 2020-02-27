@@ -784,12 +784,12 @@ def pageMap():
     if key14:
         currentPage = "CHECKLIST"
         clearKeys()
-    if key04:
+    if key03:
         clearKeys()
         mapColor = mapColor + 1
         if (mapColor >= len(mapColors) ):
             mapColor = 0
-    if key03:
+    if key04:
         clearKeys()
         currentMap = currentMap + 1
         if (currentMap >= len(maps["maps"]) ):
