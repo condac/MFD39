@@ -188,10 +188,10 @@ frame = 0
 
 
 
-radie = 30
+radie = 45
 
 ballsize = 10.0
-balldepth = 22.0
+balldepth = 122.0
 
 
 
@@ -273,7 +273,7 @@ def draw_sphere():
     global heading, radie, tilt, rota
     global ballsize
 
-    pan = 2.0
+    pan = 4.0
     glLoadIdentity();
     roll =   np.deg2rad(rota)
     tiltrad = np.deg2rad(tilt)
@@ -281,10 +281,10 @@ def draw_sphere():
 
     gluLookAt (0.0, radie, pan, 0.0, 0.0, pan,0.0 , 0.0, 1.0);
     glRotatef(rota, 0.0, 1.0, 0.0)
-    glRotatef(-tilt, 1.0, 0.0, 0.0)
-    glRotatef(-heading+6.5, 0.0, 0.0, 1.0)
+    glRotatef(-tilt+5, 1.0, 0.0, 0.0)
+    glRotatef(-heading+179, 0.0, 0.0, 1.0)
 
-    glColor3f(1.0, 1.0, 1.0)
+    setColor(colorGreenLight)
     glEnable(texture.target)        # typically target is GL_TEXTURE_2D
     glBindTexture(texture.target, texture.id)
 
@@ -292,8 +292,6 @@ def draw_sphere():
     gluQuadricOrientation(q,GLU_OUTSIDE)
     gluQuadricDrawStyle(q,GLU_FILL)
     gluQuadricTexture(q, GL_TRUE)
-
-
 
     gluSphere(q,ballsize,50,50)
 
@@ -705,7 +703,7 @@ def set3d():
     #aspectRatio = window.height / window.width
     #1.0 * width / height
     #gluPerspective(45, aspectRatio, 0.1, 100)
-    gluPerspective(45, 1.0 * window.width / window.height, 1, balldepth)
+    gluPerspective(40, 1.0 * window.width / window.height, 1, balldepth)
 
 
     glMatrixMode(GL_MODELVIEW)
@@ -748,7 +746,7 @@ def on_draw():
 
     drawFuelGauge(xfscale(475), yfscale(128))
     drawGLoad(xfscale(-385), yfscale(128))
-    drawFlightDirector(window.width/2, yfscale(400))
+    drawFlightDirector(window.width/2, yfscale(380))
 
     glColor4f(1.0,0,0,1.0)
     fps_display.draw()
