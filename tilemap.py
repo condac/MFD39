@@ -7,6 +7,7 @@ import pyglet
 import keyboard
 from pyglet.gl import *
 from sharedDrawFunctions import *
+import time
 
 zoomlevel = 9
 zoomfactor = 1.5
@@ -91,10 +92,19 @@ colorGreenSky = (94.0/255.0, 153.0/255.0, 35.0/255.0, 255.0)
 colorRBG = (1.0, 1.0, 1.0, 1.0)
 colorBlack = (0.0, 0.0, 0.0, 1.0)
 
+colorGreen1 = (0.0/255.0, 0.1, 0.0/255.0, 255.0)
+colorGreen2 = (0.0/255.0, 0.2, 0.0/255.0, 255.0)
+colorGreen3 = (0.0/255.0, 0.3, 0.0/255.0, 255.0)
+colorGreen4 = (0.0/255.0, 0.4, 0.0/255.0, 255.0)
+colorGreen5 = (0.0/255.0, 0.5, 0.0/255.0, 255.0)
+colorGreen6 = (0.0/255.0, 0.6, 0.0/255.0, 255.0)
+colorGreen7 = (0.0/255.0, 0.7, 0.0/255.0, 255.0)
+colorGreen8 = (0.0/255.0, 0.8, 0.0/255.0, 255.0)
+colorGreen9 = (0.0/255.0, 0.9, 0.0/255.0, 255.0)
+colorGreen10 = (0.0/255.0, 1.0, 0.0/255.0, 255.0)
 
-
-mapColor = 0
-mapColors = [colorGreenDark,colorGreenMedium, colorRBG, colorGreenIntense, colorGreenLight, colorGreenDark, colorGreenSky]
+mapColor = 3
+mapColors = [colorGreen1, colorGreen2, colorGreen3, colorGreen4, colorGreen5, colorGreen6, colorGreen7, colorGreen8, colorGreen9, colorGreen10, colorRBG]
 fps_display = pyglet.window.FPSDisplay(window=window)
 
 
@@ -132,7 +142,7 @@ def aiscale(a):
     return int(afscale(a))
 
 def createLabels():
-    global speedlabel, smalllabel, speedlabels, altlabels, buttonlabel,waylabel,checklabel, rightlabel
+    global speedlabel, smalllabel, speedlabels, altlabels, buttonlabel,waylabel,checklabel, rightlabel, airportlabel, altlabel
     speedlabel = pyglet.text.Label(str("speed"),
                           font_name='Arial',
                           font_size=aiscale(32),
@@ -172,6 +182,20 @@ def createLabels():
                         font_name='Consolas',
                         font_size=aiscale(30),
                         color=(0,255,0,255),
+                        x=window.width//2, y=window.height//2,
+                        anchor_x='left', anchor_y='center',
+                        group=None)
+    airportlabel = pyglet.text.Label(str("speed"),
+                        font_name='Consolas',
+                        font_size=aiscale(10),
+                        color=(0,0,0,255),
+                        x=window.width//2, y=window.height//2,
+                        anchor_x='left', anchor_y='center',
+                        group=None)
+    altlabel = pyglet.text.Label(str("speed"),
+                        font_name='Consolas',
+                        font_size=aiscale(15),
+                        color=(0,200,0,255),
                         x=window.width//2, y=window.height//2,
                         anchor_x='left', anchor_y='center',
                         group=None)
@@ -377,6 +401,57 @@ def whereInMap(lat_deg,lon_deg,zoom):
     #print((ox,oy))
     return (ox,oy)
 
+airports = []
+apindex = {}
+
+def updateAirports():
+    global currentTileX, currentTileY, zoomlevel
+    global airports, apindex
+    (latMax, lonMax) = num2deg(currentTileX+EXTILES+1, currentTileY-EXTILES, zoomlevel)
+    (latMin, lonMin) = num2deg(currentTileX-EXTILES, currentTileY+EXTILES+1, zoomlevel)
+    starttid = time.time()
+    airports = []
+    try:
+        with open("airport_xpl11.csv") as file_in:
+            firstline = True
+            for line in file_in:
+                sline = line.split(",")
+                if (firstline):
+                    firstline = False
+                    apindex = {}
+                    ii = 0
+                    for index in sline:
+                        index = index.replace("\n", "")
+                        index = index.replace("\r", "")
+                        apindex[index] = ii
+                        #print("adding index:", index, ii)
+                        ii = ii + 1
+                else:
+
+                    if (len(sline)>65):
+                        #print(sline[0])
+                        #64 lon
+                        #65 lat
+                        try:
+                            if(float(sline[apindex["laty"]]) < latMax and float(sline[apindex["laty"]]) > latMin and
+                                float(sline[apindex["lonx"]]) < lonMax and float(sline[apindex["lonx"]]) > lonMin):
+                                if (float(sline[apindex["longest_runway_length"]]) > 400) :
+                                    if (sline[apindex["longest_runway_surface"]] == "A" or sline[apindex["longest_runway_surface"]] == "C" ) :
+                                        #print(sline[2], sline[64], sline[65], sline[apindex["longest_runway_surface"]])
+                                        sline[65] = float(sline[65])
+                                        sline[apindex["lonx"]] = float(sline[apindex["lonx"]])
+                                        airports.append(sline)
+                        except ValueError:
+                            print("Not a float")
+
+
+
+    except:
+        print("error airport_")
+
+    sluttid = time.time()
+    print ("update airport time:" , sluttid - starttid)
+
 def updateTile(lat_deg,lon_deg,zoom):
     global currentTileX, currentTileY, currentTileZ, tileimage, tileimages
     global loadingMap
@@ -392,6 +467,7 @@ def updateTile(lat_deg,lon_deg,zoom):
             currentTileY = ytile
             currentTileZ = zoom
             #tileimage = getTileImage(xtile, ytile, zoom)
+            updateAirports()
             for x in range(1+EXTILES*2):
                 for y in range(1+EXTILES*2):
                     tileimages[x][y] = getTileImage(xtile-EXTILES+x, ytile-EXTILES+y, zoom)
@@ -420,7 +496,7 @@ def drawFlightDirector(x, y):
 
 
 def drawFlightDirectorLines(x, y):
-    global tilt, rota
+    global tilt, rota, altitude
     length = afscale(400)
     offset = afscale(75)
     linewidth = afscale(2)
@@ -441,6 +517,15 @@ def drawFlightDirectorLines(x, y):
 
     line(offset , tiltoffset, length, tiltoffset, linewidth)
     line(-offset , tiltoffset, -length, tiltoffset, linewidth)
+    altstr = ""
+    if (altitude<1000):
+        altstr = "{:03d}".format(int(altitude) )
+    else:
+        altstr = "{:.1f}".format(altitude/1000)
+    altlabel.text = str(altstr)
+    altlabel.x = offset*2
+    altlabel.y = tiltoffset+altlabel.font_size*0.8
+    altlabel.draw()
     glPopMatrix()
 
     return
@@ -515,6 +600,7 @@ def drawMap(x, y):
     glPopMatrix()
 
 def drawWaypoints(x, y):
+    global tileimage, zoomlevel, lon, lat, zoomfactor
     glPushMatrix()
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
@@ -557,6 +643,42 @@ def drawWaypoints(x, y):
     glPopMatrix()
 
     glPopMatrix()
+
+def drawAirports(x, y):
+    global airports, apindex, zoomlevel, zoomfactor
+    if (zoomlevel > 6):
+        glPushMatrix()
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+
+        #moving object left and right
+        glTranslatef(x, y , -0.0 ) #x,y,z,
+
+        glRotatef(heading, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
+
+        setColor((0.0,0.0,0.0,1.0))
+        glPushMatrix()
+        glScalef(zoomfactor, zoomfactor, 1)
+        for xx in airports:
+            (ox, oy) = whereInMap(xx[apindex["laty"]],xx[apindex["lonx"]],zoomlevel)
+            circle_line(ox,oy,afscale(8), 1, 8)
+            if (zoomlevel > 7):
+                airportlabel.text = xx[apindex["ident"]]
+                airportlabel.x = ox + airportlabel.font_size
+                airportlabel.y = oy
+                airportlabel.draw()
+            if (zoomlevel > 8):
+
+                angle = np.deg2rad(float(xx[apindex["longest_runway_heading"]])+90)
+                cx = afscale(8) * math.cos(angle)
+                cy = afscale(8) * math.sin(angle)
+                line(ox-cx, oy-cy, ox+cx, oy+cy, 1)
+
+
+        glPopMatrix()
+
+        glPopMatrix()
+
 
 
 
@@ -856,6 +978,7 @@ def pageMap():
     #set3d()
     set2d()
     drawMap(xfscale(0), yfscale(250))
+    drawAirports(xfscale(0), yfscale(250))
     if (showWaypoint):
         drawWaypoints(xfscale(0), yfscale(250))
         drawWaypointsInfo()
@@ -1034,7 +1157,7 @@ def on_draw():
 @window.event
 def on_key_press(s,m):
 
-    global heading, tilt, radie, rota, geardown, totalFuel, rawFuel, zoomlevel, lat, lon, zoomfactor, currentMap, mapColor
+    global heading, tilt, altitude, rota, geardown, totalFuel, rawFuel, zoomlevel, lat, lon, zoomfactor, currentMap, mapColor
 
     if s == pyglet.window.key.NUM_SUBTRACT:
         zoomlevel -= 1
@@ -1086,9 +1209,9 @@ def on_key_press(s,m):
     if s == pyglet.window.key.D:
         heading -= 1.1
     if s == pyglet.window.key.R:
-        radie -= 1
+        altitude -= 100
     if s == pyglet.window.key.F:
-        radie += 1
+        altitude += 100
     if s == pyglet.window.key.Q:
         rota += -1
     if s == pyglet.window.key.E:

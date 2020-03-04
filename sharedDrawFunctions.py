@@ -114,10 +114,10 @@ def circle(x, y, radius):
         dx, dy = (dx*c - dy*s), (dy*c + dx*s)
     glEnd()
 
-def circle_line(x, y, radius,width):
+def circle_line(x, y, radius,width, segments = 64):
     glLineWidth(width)
     glBegin(GL_LINE_LOOP);
-    segments = 64
+    
     for i in range(segments):
 
         theta = 2.0 * math.pi * i / segments
