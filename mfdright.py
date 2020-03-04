@@ -2,6 +2,7 @@ import math
 import pyglet
 import numpy as np
 from pyglet.gl import *
+from ctypes import byref, sizeof, POINTER
 
 import os
 import json
@@ -20,6 +21,7 @@ import scipy
 import scipy.misc
 import scipy.ndimage.interpolation
 
+from sharedDrawFunctions import *
 
 #glEnable(GL_TEXTURE_2D)         # enable textures
 #glShadeModel(GL_SMOOTH)         # smooth shading of polygons
@@ -30,6 +32,10 @@ heading = 0.0
 tilt = 0.0
 rota = 0.0
 
+currentTileX = 0
+currentTileY = 0
+currentTileZ = 1
+
 speed = 0
 altitude = 0
 fuel = 1.0
@@ -39,6 +45,43 @@ gload = 1.0
 
 gearratio = 0.0
 geardown = True
+
+radarx = 640
+radary = 480
+zoomlevel = 9
+
+lon = 16.9158608
+lat = 58.7806412
+
+targets = []
+t = {}
+t["lat"] = 58.7806412
+t["lon"] = 16.9158608
+targets.append(t)
+
+
+# Create the framebuffer (rendering target).
+buf = gl.GLuint(0)
+glGenFramebuffers(1, byref(buf))
+glBindFramebuffer(GL_FRAMEBUFFER, buf)
+
+# Create the texture (internal pixel data for the framebuffer).
+tex = gl.GLuint(0)
+glGenTextures(1, byref(tex))
+glBindTexture(GL_TEXTURE_2D, tex)
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, radarx, radary, 0, GL_RGBA, GL_FLOAT, None)
+
+# Bind the texture to the framebuffer.
+#glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0)
+
+# Something may have gone wrong during the process, depending on the
+# capabilities of the GPU.
+res = glCheckFramebufferStatus(GL_FRAMEBUFFER)
+if res != GL_FRAMEBUFFER_COMPLETE:
+  raise RuntimeError('Framebuffer not completed')
 
 full = False
 # main loop
@@ -63,11 +106,26 @@ glEnable(GL_BLEND)                                  # transparency
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)   # transparency
 glEnable(GL_DEPTH_TEST)
 
+
 colorGreenMedium = (0.0/255.0, 200.0/255.0, 0.0/255.0, 255.0)
 colorGreenLight = (0.0/255.0, 255.0/255.0, 0.0/255.0, 255.0)
 colorGreenDark = (0.0/255.0, 83.0/255.0, 0.0/255.0, 255.0)
 colorGreenIntense = (210.0/255.0, 255.0/255.0, 60.0/255.0, 255.0)
 colorGreenSky = (94.0/255.0, 153.0/255.0, 35.0/255.0, 255.0)
+
+colorRBG = (1.0, 1.0, 1.0, 1.0)
+colorBlack = (0.0, 0.0, 0.0, 1.0)
+
+colorGreen1 = (0.0/255.0, 0.1, 0.0/255.0, 255.0)
+colorGreen2 = (0.0/255.0, 0.2, 0.0/255.0, 255.0)
+colorGreen3 = (0.0/255.0, 0.3, 0.0/255.0, 255.0)
+colorGreen4 = (0.0/255.0, 0.4, 0.0/255.0, 255.0)
+colorGreen5 = (0.0/255.0, 0.5, 0.0/255.0, 255.0)
+colorGreen6 = (0.0/255.0, 0.6, 0.0/255.0, 255.0)
+colorGreen7 = (0.0/255.0, 0.7, 0.0/255.0, 255.0)
+colorGreen8 = (0.0/255.0, 0.8, 0.0/255.0, 255.0)
+colorGreen9 = (0.0/255.0, 0.9, 0.0/255.0, 255.0)
+colorGreen10 = (0.0/255.0, 1.0, 0.0/255.0, 255.0)
 
 def xfscale(x):
 
@@ -118,7 +176,7 @@ def linescale(value, maxValue, height):
 
 
 def createLabels():
-    global speedlabel, smalllabel, speedlabels, altlabels, fuellabel
+    global speedlabel, smalllabel, speedlabels, altlabels, fuellabel, altlabel
     speedlabel = pyglet.text.Label(str("speed"),
                           font_name='Arial',
                           font_size=aiscale(32),
@@ -160,6 +218,13 @@ def createLabels():
                               anchor_x='center', anchor_y='center',
                               group=None)
         altlabels.append(new)
+    altlabel = pyglet.text.Label(str("speed"),
+                        font_name='Consolas',
+                        font_size=aiscale(15),
+                        color=(0,200,0,255),
+                        x=window.width//2, y=window.height//2,
+                        anchor_x='left', anchor_y='center',
+                        group=None)
 createLabels()
 #glClearColor(0.0, 0.0, 0.0, 0.0)
 
@@ -193,7 +258,9 @@ balldepth = 22.0
 
 
 def readNetwork():
-    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel
+    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
+    global rawFuel, totalFuel, connection, lon, lat, groundspeed
+    global targets
     moredata = True
     while moredata:
         try:
@@ -205,6 +272,8 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
 
                 tilt = float(a1)
+                connection = True
+
             if "A2=" in stringdata:
                 a1 = stringdata.split("A2=")
                 a1 = a1[1].replace(";","")
@@ -225,6 +294,7 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 altitude = float(a1)
+                connection = True
             if "A6=" in stringdata:
                 a1 = stringdata.split("A6=")
                 a1 = a1[1].replace(";","")
@@ -241,13 +311,54 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 gearratio = float(a1)
+            if "A9=" in stringdata:
+                a1 = stringdata.split("A9=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                lon = float(a1)
+            if "A10=" in stringdata:
+                a1 = stringdata.split("A10=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                lat = float(a1)
+            if "A11=" in stringdata:
+                a1 = stringdata.split("A11=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                groundspeed = float(a1)
+            if "T01=" in stringdata:
+                a1 = stringdata.split("T01=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                targets[0]["lat"] = float(a1)
+            if "T02=" in stringdata:
+                a1 = stringdata.split("T02=")
+                a1 = a1[1].replace(";","")
+                print(a1)
+                targets[0]["lon"] = float(a1)
         except socket.error:
             moredata = False
+
+def updateTile(lat_deg,lon_deg,zoom):
+    global currentTileX, currentTileY, currentTileZ
+
+    (xtile, ytile) = deg2num(lat_deg, lon_deg, zoom)
+    if (xtile != currentTileX or ytile != currentTileY or zoom != currentTileZ) :
+
+        print("change tile")
+        loadingMap = False
+        currentTileX = xtile
+        currentTileY = ytile
+        currentTileZ = zoom
+
+
+
 def update_frame(x, y):
-    global gearratio, geardown
+    global gearratio, geardown, lat, lon, zoomlevel
 
     fakevalues()
     readNetwork()
+    updateTile(lat,lon,zoomlevel)
 
     if (gearratio >=0.9):
         geardown = True
@@ -264,8 +375,51 @@ def fakevalues():
     altitude = altitude +1
     if altitude > 50000:
         altitude = 900
+def deg2num(lat_deg, lon_deg, zoom):
+    lat_rad = math.radians(lat_deg)
+    n = 2.0 ** zoom
+    xtile = int((lon_deg + 180.0) / 360.0 * n)
+    ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
+    return (xtile, ytile)
 
+def num2deg(xtile, ytile, zoom):
+    n = 2.0 ** zoom
+    lon_deg = xtile / n * 360.0 - 180.0
+    lat_rad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
+    lat_deg = math.degrees(lat_rad)
+    return (lat_deg, lon_deg)
 
+def deg2numfloat(lat_deg, lon_deg, zoom):
+    lat_rad = math.radians(lat_deg)
+    n = 2.0 ** zoom
+    xtile = (lon_deg + 180.0) / 360.0 * n
+    ytile = (1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n
+    return (xtile, ytile)
+
+def whereInTile(lat_deg,lon_deg,zoom):
+    tileSize = 256
+    (xtile, ytile) = deg2num(lat_deg, lon_deg, zoom)
+    (xtilef, ytilef) = deg2numfloat(lat_deg, lon_deg, zoom)
+
+    ox = (tileSize * (xtilef - xtile))
+    oy = tileSize - (tileSize * (ytilef - ytile))
+    #print((ox,oy))
+    return (ox,oy)
+
+def whereInMap(lat_deg,lon_deg,zoom):
+    global currentTileX, currentTileY
+    tileSize = 256
+    (ox1, oy1) = whereInTile(lat_deg,lon_deg,zoom)
+    (xtile, ytile) = deg2num(lat_deg, lon_deg, zoom)
+    ofx = (currentTileX - xtile) * tileSize
+    ofy = (currentTileY - ytile) * tileSize
+    (cx, cy) = whereInTile(lat,lon,zoom)
+
+    ox = ox1 - cx - ofx
+    oy = oy1 - cy + ofy
+
+    #print((ox,oy))
+    return (ox,oy)
 
 def drawAtext(x,y,r1,text,angle, w=1):
     global speedlabel
@@ -290,9 +444,11 @@ def drawRadar(x, y):
 
     glRotatef(-90+fov/2, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
 
-    setColor(colorGreenDark)
+
+    setColor((0.0/255.0, 200.0/255.0, 0.0/255.0, 30/255.0))
 
     pie_circle(0,0,range, fov/360)
+    drawTargets(x,y)
 
     glPopMatrix()
     return
@@ -301,28 +457,29 @@ def drawFlightDirector(x, y):
     global geardown
     wingspan = afscale(100/2)
     body = afscale(35/2)
+    linewidth = afscale(3)
 
 
     setColor(colorGreenMedium)
 
     #pygame.draw.circle(sb, self.colorGreen10, (x, y), body, xscale(10))
-    circle_line(x,y,body, afscale(5))
+    circle_line(x,y,body, linewidth)
     #pygame.draw.line(sb, self.colorGreen10,(x+body , y),(x+wingspan, y), xscale(10))
-    line(x+body , y, x+wingspan, y, afscale(5), colorGreenMedium)
+    line(x+body , y, x+wingspan, y, linewidth, colorGreenMedium)
     #pygame.draw.line(sb, self.colorGreen10,(x-body , y),(x-wingspan, y), xscale(10))
-    line(x-body , y, x-wingspan, y, afscale(5), colorGreenMedium)
+    line(x-body , y, x-wingspan, y, linewidth, colorGreenMedium)
     if (geardown):
-        line(x, y-body, x, y-wingspan, afscale(5), colorGreenMedium)
+        line(x, y-body, x, y-wingspan, linewidth, colorGreenMedium)
     else:
-        line(x, y+body, x, y+wingspan, afscale(5), colorGreenMedium)
+        line(x, y+body, x, y+wingspan, linewidth, colorGreenMedium)
     #pygame.draw.line(sb, self.colorGreen10,(x , y+body),(x, y+wingspan), xscale(10))
 
 
 def drawFlightDirectorLines(x, y):
-    global tilt, rota
+    global tilt, rota, altitude
     length = afscale(400)
     offset = afscale(75)
-    linewidth = afscale(5)
+    linewidth = afscale(3)
 
     tiltoffset = afscale(-tilt*10.0)
 
@@ -340,6 +497,15 @@ def drawFlightDirectorLines(x, y):
 
     line(offset , tiltoffset, length, tiltoffset, linewidth, colorGreenMedium)
     line(-offset , tiltoffset, -length, tiltoffset, linewidth, colorGreenMedium)
+    altstr = ""
+    if (altitude<1000):
+        altstr = "{:03d}".format(int(altitude) )
+    else:
+        altstr = "{:.1f}".format(altitude/1000)
+    altlabel.text = str(altstr)
+    altlabel.x = offset*2
+    altlabel.y = tiltoffset+altlabel.font_size*0.8
+    altlabel.draw()
     glPopMatrix()
 
     return
@@ -383,6 +549,44 @@ def drawCompass(x, y, width):
     speedlabel.x = x
     speedlabel.y = y-afscale(30)
     speedlabel.draw()
+
+def drawTargets(x, y):
+    global zoomlevel, lon, lat, targets
+    glPushMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+
+    #moving object left and right
+    glTranslatef(x, y , -0.0 ) #x,y,z,
+
+    glRotatef(heading, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
+
+    setColor((1.0,1.0,0.0,1.0))
+    glPushMatrix()
+
+    for xx in targets:
+        (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
+        #circle_line(ox,oy,afscale(3), afscale(3))
+        # draw romb
+        glLineWidth(1.5)
+        dy = afscale(8)
+        dx = afscale(4)
+        glBegin(GL_LINE_LOOP)
+
+        glVertex2f( ox   , oy+dy)              # Top
+        glVertex2f( ox+dx, oy)              #  Right
+        glVertex2f( ox, oy-dy)              # Bottom
+        glVertex2f( ox-dx   , oy)              #  Left
+        glEnd()
+        altlabel.text = "t1"
+        altlabel.x = ox + altlabel.font_size/2
+        altlabel.y = oy
+        altlabel.draw()
+
+    glPopMatrix()
+
+    glPopMatrix()
+
 
 def setColor(color):
     (r,g,b,a) = color
@@ -513,6 +717,24 @@ def unSet2d():
     glMatrixMode(GL_PROJECTION)
     glPopMatrix()
 
+def drawRadarTexture():
+    glBindFramebuffer(GL_FRAMEBUFFER, buf)
+    glViewport(0,0,radarx,radary)
+
+    setColor((0.0, 0.0, 0.0, 1.5/255.0))
+    rect(0,0,1000,1000)
+
+    #glClearColor(0.0,0.0,0.0,0.1)
+    #glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    drawCompass(xfscale(0), yfscale(910), afscale(900))
+
+    drawRadar(xfscale(0), yfscale(50))
+
+    # Restore normal buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
+    glViewport(0,0,window.width,window.height)
+
 
 @window.event
 def on_draw():
@@ -521,25 +743,46 @@ def on_draw():
     #draw_sphere()
     set2d()
 
+    drawRadarTexture()
+
+
+    glColor4f(1.0,0,0,1.0)
     #draw_speed()
     #draw_altitude()
 
     #drawFuelGauge(xfscale(475), yfscale(128))
     #drawGLoad(xfscale(-385), yfscale(128))
 
-    drawCompass(xfscale(0), yfscale(910), afscale(900))
-    drawFlightDirector(xfscale(0), yfscale(500))
-    drawFlightDirectorLines(xfscale(0), yfscale(500))
-    drawRadar(xfscale(0), yfscale(50))
+
     glColor4f(1.0,0,0,1.0)
     fps_display.draw()
 
+
+    drawFlightDirector(xfscale(0), yfscale(500))
+    drawFlightDirectorLines(xfscale(0), yfscale(500))
+
+
+    setColor((1.0, 1.0, 1.0, 1.0))
+    glEnable(GL_TEXTURE_2D)
+    glBindTexture(GL_TEXTURE_2D, tex)
+
+    glBegin(GL_QUADS);
+    glTexCoord2i(0, 0)
+    glVertex2i(0, 0)
+    glTexCoord2i(1, 0)
+    glVertex2i(window.width, 0)
+    glTexCoord2i(1, 1)
+    glVertex2i(window.width, window.height)
+    glTexCoord2i(0, 1)
+    glVertex2i(0, window.height)
+    glEnd()
+    glDisable(GL_TEXTURE_2D)
     unSet2d()
 
 @window.event
 def on_key_press(s,m):
 
-    global heading, tilt, radie, rota, geardown, totalFuel, rawFuel
+    global heading, tilt, radie, rota, geardown, totalFuel, rawFuel, lat, lon
 
     if s == pyglet.window.key.W:
         tilt -= 1.1
@@ -569,6 +812,14 @@ def on_key_press(s,m):
     if s == pyglet.window.key.F5:
         totalFuel = rawFuel
 
+    if s == pyglet.window.key.UP:
+        lat += 0.1
+    if s == pyglet.window.key.DOWN:
+        lat -= 0.1
+    if s == pyglet.window.key.LEFT:
+        lon -= 0.1
+    if s == pyglet.window.key.RIGHT:
+        lon += 0.1
 
 @window.event
 def on_resize(width, height):
