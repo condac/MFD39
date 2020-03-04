@@ -22,6 +22,8 @@
 
 # Altitude sim/cockpit2/gauges/indicators/altitude_ft_pilot
 2.0.A5;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/altitude_ft_pilot;0.0;-1.0;1.0;0;
+3.0.A5;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/altitude_ft_pilot;0.0;-1.0;1.0;0;
+4.0.A5;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/altitude_ft_pilot;0.0;-1.0;1.0;0;
 
 #fuel
 2.0.A6;0;AO_TEXT;0;500;100;900;sim/cockpit2/fuel/fuel_quantity[0];0.0;-1.0;1.0;0;
@@ -47,18 +49,18 @@
 2.0.A12;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/mach_pilot;0.0;-1.0;1.0;0;
 
 
-
-
-
 # Radar
 3.0.T01;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane1_lat;0.0;-1.0;1.0;0;
 3.0.T02;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane1_lon;0.0;-1.0;1.0;0;
 
+3.0.T11;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane2_lat;0.0;-1.0;1.0;0;
+3.0.T12;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane2_lon;0.0;-1.0;1.0;0;
 
-#sim/flightmodel/position/local_x
-#sim/flightmodel/position/local_y
-#sim/flightmodel/position/local_z
+3.0.T21;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane3_lat;0.0;-1.0;1.0;0;
+3.0.T22;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane3_lon;0.0;-1.0;1.0;0;
 
-#	sim/multiplayer/position/plane1_x	double	y	meters	Plane 1 x location
-#	sim/multiplayer/position/plane1_y	double	y	meters	Plane 1 y location
-#	sim/multiplayer/position/plane1_z	double	y	meters	Plane 1 z location
+3.0.T31;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane4_lat;0.0;-1.0;1.0;0;
+3.0.T32;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane4_lon;0.0;-1.0;1.0;0;
+
+3.0.T41;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane5_lat;0.0;-1.0;1.0;0;
+3.0.T42;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane5_lon;0.0;-1.0;1.0;0;

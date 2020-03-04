@@ -3,6 +3,7 @@ import pyglet
 import numpy as np
 from pyglet.gl import *
 from ctypes import byref, sizeof, POINTER
+import time
 
 import os
 import json
@@ -49,16 +50,23 @@ geardown = True
 radarx = 640
 radary = 480
 zoomlevel = 9
+radartime = 0
 
 lon = 16.9158608
 lat = 58.7806412
 
+nroftargets = 5
 targets = []
 t = {}
 t["lat"] = 58.7806412
 t["lon"] = 16.9158608
-targets.append(t)
 
+targets.append(t)
+for i in range(nroftargets):
+    newt = {}
+    newt["lat"] = 0.0
+    newt["lon"] = 0.0
+    targets.append(newt)
 
 # Create the framebuffer (rendering target).
 buf = gl.GLuint(0)
@@ -255,7 +263,16 @@ radie = 30
 ballsize = 10.0
 balldepth = 22.0
 
+connection = False
 
+def parseNetData(stin, stringdata, old):
+
+    if stin in stringdata:
+        a1 = stringdata.split(stin)
+        a1 = a1[1].replace(";","")
+        connection = True
+        return float(a1)
+    return old
 
 def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
@@ -267,12 +284,8 @@ def readNetwork():
             message, address = s.recvfrom(4098)
             stringdata = message.decode('utf-8', "ignore").split("}")[0]
             #print(stringdata)
-            if "A1=" in stringdata:
-                a1 = stringdata.split("A1=")
-                a1 = a1[1].replace(";","")
+            tilt = parseNetData("A1=", stringdata, tilt)
 
-                tilt = float(a1)
-                connection = True
 
             if "A2=" in stringdata:
                 a1 = stringdata.split("A2=")
@@ -336,6 +349,50 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 print(a1)
                 targets[0]["lon"] = float(a1)
+
+            if "T11=" in stringdata:
+                a1 = stringdata.split("T11=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                targets[1]["lat"] = float(a1)
+            if "T12=" in stringdata:
+                a1 = stringdata.split("T12=")
+                a1 = a1[1].replace(";","")
+                print(a1)
+                targets[1]["lon"] = float(a1)
+
+            if "T21=" in stringdata:
+                a1 = stringdata.split("T21=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                targets[2]["lat"] = float(a1)
+            if "T22=" in stringdata:
+                a1 = stringdata.split("T22=")
+                a1 = a1[1].replace(";","")
+                print(a1)
+                targets[2]["lon"] = float(a1)
+
+            if "T31=" in stringdata:
+                a1 = stringdata.split("T31=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                targets[3]["lat"] = float(a1)
+            if "T32=" in stringdata:
+                a1 = stringdata.split("T32=")
+                a1 = a1[1].replace(";","")
+                print(a1)
+                targets[3]["lon"] = float(a1)
+
+            if "T41=" in stringdata:
+                a1 = stringdata.split("T41=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                targets[4]["lat"] = float(a1)
+            if "T42=" in stringdata:
+                a1 = stringdata.split("T42=")
+                a1 = a1[1].replace(";","")
+                print(a1)
+                targets[4]["lon"] = float(a1)
         except socket.error:
             moredata = False
 
@@ -355,8 +412,8 @@ def updateTile(lat_deg,lon_deg,zoom):
 
 def update_frame(x, y):
     global gearratio, geardown, lat, lon, zoomlevel
-
-    fakevalues()
+    if (not connection):
+        fakevalues()
     readNetwork()
     updateTile(lat,lon,zoomlevel)
 
@@ -434,7 +491,7 @@ def drawAtext(x,y,r1,text,angle, w=1):
 
 def drawRadar(x, y):
     global heading
-    fov = 90
+    fov = 80
     range = afscale(750)
     glPushMatrix()
     glMatrixMode(GL_MODELVIEW)
@@ -448,7 +505,12 @@ def drawRadar(x, y):
     setColor((0.0/255.0, 200.0/255.0, 0.0/255.0, 30/255.0))
 
     pie_circle(0,0,range, fov/360)
+
     drawTargets(x,y)
+
+    setColor((0.0, 0.0, 0.0, 255.0))
+    glRotatef(-fov, 0.0, 0.0, 1.0)
+    pie_circle(0,0,range, 1.0-fov/360)
 
     glPopMatrix()
     return
@@ -465,13 +527,13 @@ def drawFlightDirector(x, y):
     #pygame.draw.circle(sb, self.colorGreen10, (x, y), body, xscale(10))
     circle_line(x,y,body, linewidth)
     #pygame.draw.line(sb, self.colorGreen10,(x+body , y),(x+wingspan, y), xscale(10))
-    line(x+body , y, x+wingspan, y, linewidth, colorGreenMedium)
+    line(x+body , y, x+wingspan, y, linewidth)
     #pygame.draw.line(sb, self.colorGreen10,(x-body , y),(x-wingspan, y), xscale(10))
-    line(x-body , y, x-wingspan, y, linewidth, colorGreenMedium)
+    line(x-body , y, x-wingspan, y, linewidth)
     if (geardown):
-        line(x, y-body, x, y-wingspan, linewidth, colorGreenMedium)
+        line(x, y-body, x, y-wingspan, linewidth)
     else:
-        line(x, y+body, x, y+wingspan, linewidth, colorGreenMedium)
+        line(x, y+body, x, y+wingspan, linewidth)
     #pygame.draw.line(sb, self.colorGreen10,(x , y+body),(x, y+wingspan), xscale(10))
 
 
@@ -495,8 +557,8 @@ def drawFlightDirectorLines(x, y):
 
     glRotatef(rota, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
 
-    line(offset , tiltoffset, length, tiltoffset, linewidth, colorGreenMedium)
-    line(-offset , tiltoffset, -length, tiltoffset, linewidth, colorGreenMedium)
+    line(offset , tiltoffset, length, tiltoffset, linewidth)
+    line(-offset , tiltoffset, -length, tiltoffset, linewidth)
     altstr = ""
     if (altitude<1000):
         altstr = "{:03d}".format(int(altitude) )
@@ -505,6 +567,12 @@ def drawFlightDirectorLines(x, y):
     altlabel.text = str(altstr)
     altlabel.x = offset*2
     altlabel.y = tiltoffset+altlabel.font_size*0.8
+    altlabel.draw()
+
+    #draw elsevere also to avoid strange bugs
+    altlabel.text = str("ba")
+    altlabel.x = -10000
+    altlabel.y = -10000
     altlabel.draw()
     glPopMatrix()
 
@@ -532,7 +600,7 @@ def drawCompass(x, y, width):
             (ihead+math.pi*2 > ahead-math.pi/6 and ihead+math.pi*2 < ahead+math.pi/6)):
             #it is visible draw it
             ihead = ihead +math.pi/2 - ahead
-            line(x-math.cos(ihead)*radius, y-radius+math.sin(ihead)*radius, x-math.cos(ihead)*(radius+marklength), y-radius+math.sin(ihead)*(radius+marklength), afscale(5), colorGreenMedium )
+            line(x-math.cos(ihead)*radius, y-radius+math.sin(ihead)*radius, x-math.cos(ihead)*(radius+marklength), y-radius+math.sin(ihead)*(radius+marklength), afscale(5) )
 
             #text
             if (i % 2) == 0:
@@ -561,27 +629,16 @@ def drawTargets(x, y):
 
     glRotatef(heading, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
 
-    setColor((1.0,1.0,0.0,1.0))
+    setColor((0.0,1.0,0.0,1.0))
     glPushMatrix()
 
     for xx in targets:
         (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
         #circle_line(ox,oy,afscale(3), afscale(3))
-        # draw romb
-        glLineWidth(1.5)
-        dy = afscale(8)
-        dx = afscale(4)
-        glBegin(GL_LINE_LOOP)
+        # draw
+        rect(ox,oy,3,3)
 
-        glVertex2f( ox   , oy+dy)              # Top
-        glVertex2f( ox+dx, oy)              #  Right
-        glVertex2f( ox, oy-dy)              # Bottom
-        glVertex2f( ox-dx   , oy)              #  Left
-        glEnd()
-        altlabel.text = "t1"
-        altlabel.x = ox + altlabel.font_size/2
-        altlabel.y = oy
-        altlabel.draw()
+
 
     glPopMatrix()
 
@@ -648,32 +705,7 @@ def circle_line(x, y, radius,width):
 
     glEnd();
 
-def arc(x, y, radius,width, startangle, endangle):
-    glLineWidth(width)
-    glBegin(GL_LINE_STRIP);
-    segments = 64
-    starttheta = startangle * 1.0
-    for i in range(segments):
 
-        theta = endangle * i / segments
-
-        cx = radius * math.cos(starttheta+theta)
-        cy = radius * math.sin(starttheta+theta)
-
-        glVertex2f(x + cx, y + cy)
-
-    glEnd();
-
-def line(x1, y1, x2, y2, w, color):
-    (r ,g,b,a)=color
-    glColor4f(r,g,b,a)
-    glLineWidth(w)
-    glBegin(GL_LINES)
-
-
-    glVertex3f(float(x1),float(y1),0.0)
-    glVertex3f(float(x2),float(y2),0.0)
-    glEnd()
 
 
 def set3d():
@@ -727,7 +759,7 @@ def drawRadarTexture():
     #glClearColor(0.0,0.0,0.0,0.1)
     #glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    drawCompass(xfscale(0), yfscale(910), afscale(900))
+
 
     drawRadar(xfscale(0), yfscale(50))
 
@@ -738,15 +770,19 @@ def drawRadarTexture():
 
 @window.event
 def on_draw():
+    global radartime
 
     set3d()
     #draw_sphere()
     set2d()
 
-    drawRadarTexture()
+    if (time.time() > radartime):
+        radartime = time.time() + 1.0
+        drawRadarTexture()
 
 
     glColor4f(1.0,0,0,1.0)
+
     #draw_speed()
     #draw_altitude()
 
@@ -761,6 +797,7 @@ def on_draw():
     drawFlightDirector(xfscale(0), yfscale(500))
     drawFlightDirectorLines(xfscale(0), yfscale(500))
 
+    drawCompass(xfscale(0), yfscale(910), afscale(900))
 
     setColor((1.0, 1.0, 1.0, 1.0))
     glEnable(GL_TEXTURE_2D)
