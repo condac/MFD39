@@ -37,6 +37,8 @@
 #Longitude and latitude
 4.0.A9;0;AO_TEXT;0;500;100;900;sim/flightmodel/position/longitude;0.0;-1.0;1.0;0;
 4.0.A10;0;AO_TEXT;0;500;100;900;sim/flightmodel/position/latitude;0.0;-1.0;1.0;0;
+3.0.A9;0;AO_TEXT;0;500;100;900;sim/flightmodel/position/longitude;0.0;-1.0;1.0;0;
+3.0.A10;0;AO_TEXT;0;500;100;900;sim/flightmodel/position/latitude;0.0;-1.0;1.0;0;
 
 #Ground speed sim/flightmodel/position/groundspeed
 4.0.A11;0;AO_TEXT;0;500;100;900;sim/flightmodel/position/groundspeed;0.0;-1.0;1.0;0;
@@ -49,6 +51,10 @@
 
 
 # Radar
+3.0.T01;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane1_lat;0.0;-1.0;1.0;0;
+3.0.T02;0;AO_TEXT;0;500;100;900;sim/multiplayer/position/plane1_lon;0.0;-1.0;1.0;0;
+
+
 #sim/flightmodel/position/local_x
 #sim/flightmodel/position/local_y
 #sim/flightmodel/position/local_z
