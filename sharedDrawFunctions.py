@@ -162,7 +162,17 @@ def rect(x, y, dx, dy):
     glVertex2f( x+dx, y)              # Bottom Right
     glVertex2f( x   , y)              # Bottom Left
     glEnd()
-    
+
+def rect_line(x, y, dx, dy, w):
+    glLineWidth(w)
+    glBegin(GL_LINE_LOOP)
+    #glBegin(GL_QUADS)                      # Draw A Quad
+    glVertex2f( x   , y+dy)              # Top Left
+    glVertex2f( x+dx, y+dy)              # Top Right
+    glVertex2f( x+dx, y)              # Bottom Right
+    glVertex2f( x   , y)              # Bottom Left
+    glEnd()
+
 def jas(x, y, size):
     pyglet.graphics.draw(9, pyglet.gl.GL_POLYGON, ('v2f', [x, y,
                                                         x-size*0.5, y,

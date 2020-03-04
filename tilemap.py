@@ -14,8 +14,13 @@ gearratio = 0.0
 geardown = True
 
 #58.402261, 15.525880
-lon = 15.525880
-lat = 58.402261
+# eskn
+lon = 16.9158608
+lat = 58.7806412
+
+# malmen
+#lon = 15.525880
+#lat = 58.402261
 
 heading = 80.0
 tilt = 0.0
@@ -396,7 +401,7 @@ def drawFlightDirector(x, y):
     global geardown
     wingspan = afscale(100/2)
     body = afscale(35/2)
-    linewidth = afscale(4)
+    linewidth = afscale(2)
 
 
     setColor(colorGreenMedium)
@@ -418,7 +423,7 @@ def drawFlightDirectorLines(x, y):
     global tilt, rota
     length = afscale(400)
     offset = afscale(75)
-    linewidth = afscale(4)
+    linewidth = afscale(2)
 
     tiltoffset = afscale(-tilt*10.0)
 
@@ -524,13 +529,24 @@ def drawWaypoints(x, y):
     glScalef(zoomfactor, zoomfactor, 1)
     for xx in loadedwaypoints["waypoints"]:
         (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
-        circle_line(ox,oy,afscale(3), afscale(3))
+        #circle_line(ox,oy,afscale(3), afscale(3))
+        # draw romb
+        glLineWidth(1.5)
+        dy = afscale(8)
+        dx = afscale(4)
+        glBegin(GL_LINE_LOOP)
+
+        glVertex2f( ox   , oy+dy)              # Top
+        glVertex2f( ox+dx, oy)              #  Right
+        glVertex2f( ox, oy-dy)              # Bottom
+        glVertex2f( ox-dx   , oy)              #  Left
+        glEnd()
         waylabel.text = xx["text"]
         waylabel.x = ox + waylabel.font_size/2
         waylabel.y = oy
         waylabel.draw()
     setColor(colorGreenLight)
-    glLineWidth(2)
+    glLineWidth(1)
     glBegin(GL_LINE_STRIP);
     for xx in loadedwaypoints["waypoints"]:
         (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
@@ -773,36 +789,76 @@ def pageWaypoint():
     unSet2d()
 
 
-
+showWaypoint = True
+subPageMap = "KSTR"
 def pageMap():
     global key01, key02, key03, key04, key11, key12, key13, key14, key15, key16, currentPage
-    global mapColor, currentMap, currentTileX
-    global loadingMap
-    if key16:
-        currentPage = "MENU"
+    global mapColor, currentMap, currentTileX, zoomlevel
+    global loadingMap, showWaypoint, subPageMap
+    if key11:
+        subPageMap = "KSTR"
         clearKeys()
+    if key12:
+        subPageMap = "VAT"
+        clearKeys()
+
     if key14:
         currentPage = "CHECKLIST"
         clearKeys()
-    if key03:
+    if key16:
+        currentPage = "MENU"
         clearKeys()
-        mapColor = mapColor + 1
-        if (mapColor >= len(mapColors) ):
-            mapColor = 0
-    if key04:
-        clearKeys()
-        currentMap = currentMap + 1
-        if (currentMap >= len(maps["maps"]) ):
-            currentMap = 0
-        currentTileX = -1
-    if key01:
-        clearKeys()
-        nextWaypoint(manual=True)
+
+
+
+    if (subPageMap == "KSTR") :
+        if key01:
+            clearKeys()
+            zoomlevel += 1
+            if (zoomlevel >12):
+                zoomlevel = 12
+            print("zoomlevel ", zoomlevel)
+        if key02:
+            clearKeys()
+            zoomlevel -= 1
+            if (zoomlevel <1):
+                zoomlevel = 1
+            print("zoomlevel ", zoomlevel)
+        if key03:
+            clearKeys()
+            mapColor = mapColor + 1
+            if (mapColor >= len(mapColors) ):
+                mapColor = 0
+        if key04:
+            clearKeys()
+            currentMap = currentMap + 1
+            if (currentMap >= len(maps["maps"]) ):
+                currentMap = 0
+            currentTileX = -1
+
+    if (subPageMap == "VAT") :
+        if key01:
+            clearKeys()
+            nextWaypoint(manual=True)
+        if key02:
+            clearKeys()
+            showWaypoint = not showWaypoint
+
+        if key03:
+            clearKeys()
+
+        if key04:
+            clearKeys()
+            currentPage = "WAYPOINT"
+
+
+
     #set3d()
     set2d()
     drawMap(xfscale(0), yfscale(250))
-    drawWaypoints(xfscale(0), yfscale(250))
-    drawWaypointsInfo()
+    if (showWaypoint):
+        drawWaypoints(xfscale(0), yfscale(250))
+        drawWaypointsInfo()
     glColor4f(1.0,0,0,1.0)
 
     #drawCompass(xfscale(0), yfscale(910), afscale(800))
@@ -812,20 +868,29 @@ def pageMap():
     rect(0, 0, afscale(25),yfscale(1000))
     rect(0, yfscale(1000-25), xfscale(1000),yfscale(25))
     setColor(colorGreenLight)
-    vertText(afscale(25/2), yfscale(1000)/7*6, "KSTR")
-    vertText(afscale(25/2), yfscale(1000)/7*5, "VAT")
-    vertText(afscale(25/2), yfscale(1000)/7*4, "UDAT")
+    vertText(afscale(25/2), yfscale(1000)/7*6, "KSTR") # key11
+    vertText(afscale(25/2), yfscale(1000)/7*5, "VAT")  # key12
+    vertText(afscale(25/2), yfscale(1000)/7*4, "")
 
-    vertText(afscale(25/2), yfscale(1000)/7*3, "CHKL")
-    vertText(afscale(25/2), yfscale(1000)/7*2, "LÄNK")
-    vertText(afscale(25/2), yfscale(1000)/7*1, "MENY")
+    vertText(afscale(25/2), yfscale(1000)/7*3, "")  # key14
+    vertText(afscale(25/2), yfscale(1000)/7*2, "")
+    vertText(afscale(25/2), yfscale(1000)/7*1, "MENY")  # key16
 
 
+    if (subPageMap == "KSTR") :
+        rect_line(afscale(1), yfscale(1000)/7*6 -afscale(120/2), afscale(25), afscale(120), afscale(2))
 
-    horiText(xfscale(-200), yfscale(1000-25), "STEG") # key01
-    horiText(xfscale(-100), yfscale(1000-25), "LAND")
-    horiText(xfscale(100), yfscale(1000-25), "ÄPOL")
-    horiText(xfscale(200), yfscale(1000-25), "PMGD")
+        horiText(xfscale(-200), yfscale(1000-25), "+") # key01
+        horiText(xfscale(-100), yfscale(1000-25), "-") # key02
+        horiText(xfscale(100), yfscale(1000-25), "FÄRG")  # key03
+        horiText(xfscale(200), yfscale(1000-25), "")  # key04
+    if (subPageMap == "VAT") :
+        rect_line(afscale(1), yfscale(1000)/7*5 -afscale(120/2), afscale(25), afscale(120), afscale(2))
+
+        horiText(xfscale(-200), yfscale(1000-25), "STEG") # key01
+        horiText(xfscale(-100), yfscale(1000-25), "VISA") # key02
+        horiText(xfscale(100), yfscale(1000-25), "")  # key03
+        horiText(xfscale(200), yfscale(1000-25), "LIST")  # key04
 
     setColor(colorGreenLight)
     jas(xfscale(0), yfscale(250-25), afscale(25))
