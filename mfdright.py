@@ -32,6 +32,7 @@ fuel = 1.0
 totalFuel = 1000.0
 rawFuel = 1.0
 gload = 1.0
+speedbrake = 1.0
 
 gearratio = 0.0
 geardown = True
@@ -245,7 +246,7 @@ def parseNetData(stin, stringdata, old):
 
 def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, aoa
-    global rawFuel, totalFuel, connection, lon, lat, groundspeed
+    global rawFuel, totalFuel, connection, lon, lat, groundspeed, speedbrake
     global targets
     moredata = True
     while moredata:
@@ -254,6 +255,7 @@ def readNetwork():
             stringdata = message.decode('utf-8', "ignore").split("}")[0]
             #print(stringdata)
             tilt = parseNetData("A1=", stringdata, tilt)
+            speedbrake = parseNetData("A14=", stringdata, speedbrake)
 
 
             if "A2=" in stringdata:
@@ -493,7 +495,7 @@ def drawRadar(x, y):
     return
 
 def drawFlightDirector(x, y):
-    global geardown, aoa
+    global geardown, aoa, speedbrake
     wingspan = afscale(100/2)
     body = afscale(35/2)
     linewidth = afscale(3)
@@ -513,6 +515,9 @@ def drawFlightDirector(x, y):
         line(x, y-body, x, y-wingspan, linewidth)
     else:
         line(x, y+body, x, y+wingspan, linewidth)
+    if (speedbrake >0):
+        line(x, y, x+body, y+body, linewidth)
+        line(x, y, x-body, y+body, linewidth)
     #pygame.draw.line(sb, self.colorGreen10,(x , y+body),(x, y+wingspan), xscale(10))
 
 
@@ -736,6 +741,9 @@ def on_draw():
     #draw_sphere()
     set2d()
 
+    drawFlightDirector(xfscale(0), yfscale(500))
+    drawFlightDirectorLines(xfscale(0), yfscale(500))
+
     drawRuler(xfscale(550), yfscale(50))
     if (time.time() > radartime):
         radartime = time.time() + 2.0
@@ -753,11 +761,9 @@ def on_draw():
 
 
     glColor4f(1.0,0,0,1.0)
-    fps_display.draw()
+    #fps_display.draw()
 
 
-    drawFlightDirector(xfscale(0), yfscale(500))
-    drawFlightDirectorLines(xfscale(0), yfscale(500))
 
     drawCompass(xfscale(0), yfscale(910), afscale(900))
 

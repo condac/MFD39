@@ -27,6 +27,8 @@ heading = 80.0
 tilt = 0.0
 rota = 0.0
 aoa = 0.0
+speedbrake = 1.0
+
 
 speed = 0.0
 altitude = 0.0
@@ -222,6 +224,15 @@ def createLabels():
         altlabels.append(new)
 createLabels()
 
+def parseNetData(stin, stringdata, old):
+
+    if stin in stringdata:
+        a1 = stringdata.split(stin)
+        a1 = a1[1].replace(";","")
+        connection = True
+        return float(a1)
+    return old
+
 def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
     global rawFuel, totalFuel, connection, lon, lat, groundspeed, aoa
@@ -231,6 +242,9 @@ def readNetwork():
             message, address = s.recvfrom(4098)
             stringdata = message.decode('utf-8', "ignore").split("}")[0]
             #print(stringdata)
+            speedbrake = parseNetData("A14=", stringdata, speedbrake)
+
+
             if "A1=" in stringdata:
                 a1 = stringdata.split("A1=")
                 a1 = a1[1].replace(";","")
@@ -480,7 +494,7 @@ def updateTile(lat_deg,lon_deg,zoom):
 
 
 def drawFlightDirector(x, y):
-    global geardown, aoa
+    global geardown, aoa, speedbrake
     wingspan = afscale(100/2)
     body = afscale(35/2)
     linewidth = afscale(3)
@@ -501,7 +515,9 @@ def drawFlightDirector(x, y):
     else:
         line(x, y+body, x, y+wingspan, linewidth)
     #pygame.draw.line(sb, self.colorGreen10,(x , y+body),(x, y+wingspan), xscale(10))
-
+    if (speedbrake >0):
+        line(x, y, x+body, y+body, linewidth)
+        line(x, y, x-body, y+body, linewidth)
 
 def drawFlightDirectorLines(x, y):
     global tilt, rota, altitude
