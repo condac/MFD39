@@ -29,6 +29,7 @@ localPort = 34556
 heading = 0.0
 tilt = 0.0
 rota = 0.0
+aoa = 0.0
 
 speed = 0
 machspeed = 0.0
@@ -197,7 +198,7 @@ balldepth = 122.0
 
 def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel, connection
-    global machspeed
+    global machspeed, aoa
     moredata = True
     while moredata:
         try:
@@ -253,6 +254,11 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 machspeed = float(a1)
+            if "A13=" in stringdata:
+                a1 = stringdata.split("A13=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                aoa = float(a1)
         except socket.error:
             moredata = False
 def update_frame(x, y):

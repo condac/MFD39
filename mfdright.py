@@ -32,6 +32,7 @@ localPort = 34557
 heading = 0.0
 tilt = 0.0
 rota = 0.0
+aoa = 0.0
 
 currentTileX = 0
 currentTileY = 0
@@ -49,8 +50,9 @@ geardown = True
 
 radarx = 640
 radary = 480
-zoomlevel = 9
+zoomlevel = 10
 radartime = 0
+maxrange = 40
 
 lon = 16.9158608
 lat = 58.7806412
@@ -275,7 +277,7 @@ def parseNetData(stin, stringdata, old):
     return old
 
 def readNetwork():
-    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
+    global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, aoa
     global rawFuel, totalFuel, connection, lon, lat, groundspeed
     global targets
     moredata = True
@@ -339,6 +341,11 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 groundspeed = float(a1)
+            if "A13=" in stringdata:
+                a1 = stringdata.split("A13=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                aoa = float(a1)
             if "T01=" in stringdata:
                 a1 = stringdata.split("T01=")
                 a1 = a1[1].replace(";","")
@@ -347,7 +354,7 @@ def readNetwork():
             if "T02=" in stringdata:
                 a1 = stringdata.split("T02=")
                 a1 = a1[1].replace(";","")
-                print(a1)
+                #print(a1)
                 targets[0]["lon"] = float(a1)
 
             if "T11=" in stringdata:
@@ -358,7 +365,7 @@ def readNetwork():
             if "T12=" in stringdata:
                 a1 = stringdata.split("T12=")
                 a1 = a1[1].replace(";","")
-                print(a1)
+                #print(a1)
                 targets[1]["lon"] = float(a1)
 
             if "T21=" in stringdata:
@@ -369,7 +376,7 @@ def readNetwork():
             if "T22=" in stringdata:
                 a1 = stringdata.split("T22=")
                 a1 = a1[1].replace(";","")
-                print(a1)
+                #print(a1)
                 targets[2]["lon"] = float(a1)
 
             if "T31=" in stringdata:
@@ -380,7 +387,7 @@ def readNetwork():
             if "T32=" in stringdata:
                 a1 = stringdata.split("T32=")
                 a1 = a1[1].replace(";","")
-                print(a1)
+                #print(a1)
                 targets[3]["lon"] = float(a1)
 
             if "T41=" in stringdata:
@@ -391,7 +398,7 @@ def readNetwork():
             if "T42=" in stringdata:
                 a1 = stringdata.split("T42=")
                 a1 = a1[1].replace(";","")
-                print(a1)
+                #print(a1)
                 targets[4]["lon"] = float(a1)
         except socket.error:
             moredata = False
@@ -502,7 +509,7 @@ def drawRadar(x, y):
     glRotatef(-90+fov/2, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
 
 
-    setColor((0.0/255.0, 200.0/255.0, 0.0/255.0, 30/255.0))
+    setColor((0.0/255.0, 200.0/255.0, 0.0/255.0, 35/255.0))
 
     pie_circle(0,0,range, fov/360)
 
@@ -516,11 +523,13 @@ def drawRadar(x, y):
     return
 
 def drawFlightDirector(x, y):
-    global geardown
+    global geardown, aoa
     wingspan = afscale(100/2)
     body = afscale(35/2)
     linewidth = afscale(3)
 
+    aoaoffset = afscale(-aoa*10.0)
+    y = y + aoaoffset
 
     setColor(colorGreenMedium)
 
@@ -578,6 +587,48 @@ def drawFlightDirectorLines(x, y):
 
     return
 
+def drawRuler(x,y):
+    global gload, fuellabel, zoomlevel, maxrange
+    height = afscale(700)
+    longline = afscale(20)
+    shortline = afscale(10)
+    maxrange = 9.0
+    if (zoomlevel == 8):
+        maxrange = 160
+    if (zoomlevel == 9):
+        maxrange = 80
+    if (zoomlevel == 10):
+        maxrange = 40
+    if (zoomlevel == 11):
+        maxrange = 20
+    if (zoomlevel == 12):
+        maxrange = 10
+    if (zoomlevel == 13):
+        maxrange = 5
+    if (zoomlevel == 14):
+        maxrange = 2.5
+    if (zoomlevel == 15):
+        maxrange = 2.5/2
+
+    setColor(colorGreen8)
+    line(x , y, x, y+linescale(maxrange, maxrange, height), afscale(5))
+
+
+
+    for i in range(5):
+        rr = i*maxrange/4
+        #texts
+        fuellabel.text = str(rr)
+        fuellabel.x = x-longline
+        fuellabel.y = y + linescale(rr, maxrange, height)
+        fuellabel.draw()
+        line(x , y+linescale(float(rr), maxrange, height), x-longline, y+linescale(float(rr), maxrange, height), afscale(5))
+
+    fuellabel.text = str("km")
+    fuellabel.x = x
+    fuellabel.y = y + height+(fuellabel.font_size)
+    fuellabel.draw()
+
 
 
 def drawCompass(x, y, width):
@@ -619,7 +670,7 @@ def drawCompass(x, y, width):
     speedlabel.draw()
 
 def drawTargets(x, y):
-    global zoomlevel, lon, lat, targets
+    global zoomlevel, lon, lat, targets, maxrange
     glPushMatrix()
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
@@ -633,78 +684,17 @@ def drawTargets(x, y):
     glPushMatrix()
 
     for xx in targets:
-        (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
-        #circle_line(ox,oy,afscale(3), afscale(3))
-        # draw
-        rect(ox,oy,3,3)
+        if (getDistanceGPS(lat,lon,xx["lat"],xx["lon"]) < maxrange):
+            (ox, oy) = whereInMap(xx["lat"],xx["lon"],zoomlevel)
+            #circle_line(ox,oy,afscale(3), afscale(3))
+            # draw
+            rect(ox,oy,4,4)
 
 
 
     glPopMatrix()
 
     glPopMatrix()
-
-
-def setColor(color):
-    (r,g,b,a) = color
-    glColor4f(r, g, b, a)
-
-def pie_circle(x, y, radius, percent):
-
-    iterations = int(2*radius*math.pi /4)
-    iterations = 128
-    if (percent <0.0) :
-        percent = 0.0
-    if (percent >1.0) :
-        percent = 1.0
-    percent = 1.0 - percent
-
-    per = int( (iterations*percent) )
-    s = sin(2*math.pi / iterations)
-    c = cos(2*math.pi / iterations)
-
-    dx, dy = radius, 0
-
-    glBegin(GL_TRIANGLE_FAN)
-    glVertex2f(x, y)
-    for i in range(iterations+1 - per):
-        glVertex2f(x-dx, y+dy)
-        dx, dy = (dx*c - dy*s), (dy*c + dx*s)
-    glEnd()
-
-def circle(x, y, radius):
-
-    iterations = int(2*radius*math.pi)
-    iterations = 128
-
-    s = sin(2*math.pi / iterations)
-    c = cos(2*math.pi / iterations)
-
-    dx, dy = radius, 0
-
-    glBegin(GL_TRIANGLE_FAN)
-    glVertex2f(x, y)
-    for i in range(iterations+1):
-        glVertex2f(x-dx, y+dy)
-        dx, dy = (dx*c - dy*s), (dy*c + dx*s)
-    glEnd()
-
-def circle_line(x, y, radius,width):
-    glLineWidth(width)
-    glBegin(GL_LINE_LOOP);
-    segments = 64
-
-    for i in range(segments):
-
-        theta = 2.0 * math.pi * i / segments
-
-        cx = radius * math.cos(theta)
-        cy = radius * math.sin(theta)
-
-        glVertex2f(x + cx, y + cy)
-
-    glEnd();
-
 
 
 
@@ -754,7 +744,7 @@ def drawRadarTexture():
     glViewport(0,0,radarx,radary)
 
     setColor((0.0, 0.0, 0.0, 1.5/255.0))
-    rect(0,0,1000,1000)
+    #rect(0,0,1000,1000)
 
     #glClearColor(0.0,0.0,0.0,0.1)
     #glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -777,7 +767,7 @@ def on_draw():
     set2d()
 
     if (time.time() > radartime):
-        radartime = time.time() + 1.0
+        radartime = time.time() + 2.0
         drawRadarTexture()
 
 
@@ -786,9 +776,10 @@ def on_draw():
     #draw_speed()
     #draw_altitude()
 
+
     #drawFuelGauge(xfscale(475), yfscale(128))
     #drawGLoad(xfscale(-385), yfscale(128))
-
+    drawRuler(xfscale(550), yfscale(50))
 
     glColor4f(1.0,0,0,1.0)
     fps_display.draw()
@@ -819,7 +810,7 @@ def on_draw():
 @window.event
 def on_key_press(s,m):
 
-    global heading, tilt, radie, rota, geardown, totalFuel, rawFuel, lat, lon
+    global heading, tilt, radie, rota, geardown, totalFuel, rawFuel, lat, lon, zoomlevel
 
     if s == pyglet.window.key.W:
         tilt -= 1.1
@@ -857,6 +848,16 @@ def on_key_press(s,m):
         lon -= 0.1
     if s == pyglet.window.key.RIGHT:
         lon += 0.1
+    if s == pyglet.window.key.NUM_SUBTRACT:
+        zoomlevel -= 1
+        if (zoomlevel <10):
+            zoomlevel = 10
+        print("zoomlevel ", zoomlevel)
+    if s == pyglet.window.key.NUM_ADD:
+        zoomlevel += 1
+        if (zoomlevel >15):
+            zoomlevel = 15
+        print("zoomlevel ", zoomlevel)
 
 @window.event
 def on_resize(width, height):

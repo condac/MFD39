@@ -26,6 +26,7 @@ lat = 58.7806412
 heading = 80.0
 tilt = 0.0
 rota = 0.0
+aoa = 0.0
 
 speed = 0.0
 altitude = 0.0
@@ -223,7 +224,7 @@ createLabels()
 
 def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
-    global rawFuel, totalFuel, connection, lon, lat, groundspeed
+    global rawFuel, totalFuel, connection, lon, lat, groundspeed, aoa
     moredata = True
     while moredata:
         try:
@@ -289,6 +290,11 @@ def readNetwork():
                 a1 = a1[1].replace(";","")
                 #print(a1)
                 groundspeed = float(a1)
+            if "A13=" in stringdata:
+                a1 = stringdata.split("A13=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                aoa = float(a1)
         except socket.error:
             moredata = False
 def update_frame(x, y):
@@ -474,11 +480,13 @@ def updateTile(lat_deg,lon_deg,zoom):
 
 
 def drawFlightDirector(x, y):
-    global geardown
+    global geardown, aoa
     wingspan = afscale(100/2)
     body = afscale(35/2)
-    linewidth = afscale(2)
+    linewidth = afscale(3)
 
+    aoaoffset = afscale(-aoa*10.0)
+    y = y + aoaoffset
 
     setColor(colorGreenMedium)
 
@@ -526,6 +534,13 @@ def drawFlightDirectorLines(x, y):
     altlabel.x = offset*2
     altlabel.y = tiltoffset+altlabel.font_size*0.8
     altlabel.draw()
+
+    #draw elsevere also to avoid strange bugs
+    altlabel.text = str("ba")
+    altlabel.x = -10000
+    altlabel.y = -10000
+    altlabel.draw()
+    
     glPopMatrix()
 
     return
