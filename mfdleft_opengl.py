@@ -3,22 +3,22 @@ import pyglet
 import numpy as np
 from pyglet.gl import *
 
-import os
+#import os
 import json
-import random
+#import random
 import socket
-import sys
-from pprint import pprint
-from PIL import Image
+#import sys
+#from pprint import pprint
+#from PIL import Image
 import time
 
-import imageio
+#import imageio
 import math
 from math import sin, cos, sqrt, atan2, radians
 import numpy as np
-import scipy
-import scipy.misc
-import scipy.ndimage.interpolation
+#import scipy
+#import scipy.misc
+#import scipy.ndimage.interpolation
 import keyboard
 
 #glEnable(GL_TEXTURE_2D)         # enable textures
@@ -35,7 +35,11 @@ speed = 0
 machspeed = 0.0
 altitude = 0
 fuel = 1.0
-totalFuel = 1700.0
+fuel0 = 0.0
+fuel1 = 0.0
+fuel2 = 0.0
+fuel3 = 0.0
+totalFuel = 1182.0*2
 rawFuel = 1.0
 gload = 1.0
 
@@ -199,6 +203,7 @@ balldepth = 122.0
 def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel, connection
     global machspeed, aoa
+    global fuel0, fuel1, fuel2, fuel3
     moredata = True
     while moredata:
         try:
@@ -239,6 +244,28 @@ def readNetwork():
                 #print(a1)
                 rawFuel = float(a1)
                 fuel = rawFuel / totalFuel
+
+            if "F0=" in stringdata:
+                a1 = stringdata.split("F0=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                fuel0 = float(a1)
+            if "F1=" in stringdata:
+                a1 = stringdata.split("F1=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                fuel1 = float(a1)
+            if "F2=" in stringdata:
+                a1 = stringdata.split("F2=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                fuel2 = float(a1)
+            if "F3=" in stringdata:
+                a1 = stringdata.split("F3=")
+                a1 = a1[1].replace(";","")
+                #print(a1)
+                fuel3 = float(a1)
+
             if "A7=" in stringdata:
                 a1 = stringdata.split("A7=")
                 a1 = a1[1].replace(";","")
@@ -510,10 +537,16 @@ def drawFlightDirector(x, y):
     #pygame.draw.line(sb, self.colorGreen10,(x , y+body),(x, y+wingspan), xscale(10))
 
 def drawFuelGauge(x,y):
-    global fuel, fuellabel
+    global fuel, fuellabel, totalFuel
+    global fuel0, fuel1, fuel2, fuel3
     height = afscale(440)
     longline = afscale(20)
     shortline = afscale(10)
+
+    fuelTotal = fuel0 + fuel1 + fuel2 + fuel3
+
+    fuel = fuelTotal / totalFuel
+
     glDisable(GL_DEPTH_TEST)
 
     line(x , y, x, y+fuelscale(2.0, height), afscale(5), colorGreenMedium)
