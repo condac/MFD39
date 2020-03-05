@@ -58,28 +58,7 @@ for i in range(nroftargets):
     newt["lon"] = 0.0
     targets.append(newt)
 
-# Create the framebuffer (rendering target).
-buf = gl.GLuint(0)
-glGenFramebuffers(1, byref(buf))
-glBindFramebuffer(GL_FRAMEBUFFER, buf)
 
-# Create the texture (internal pixel data for the framebuffer).
-tex = gl.GLuint(0)
-glGenTextures(1, byref(tex))
-glBindTexture(GL_TEXTURE_2D, tex)
-glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, radarx, radary, 0, GL_RGBA, GL_FLOAT, None)
-
-# Bind the texture to the framebuffer.
-#glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0)
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0)
-
-# Something may have gone wrong during the process, depending on the
-# capabilities of the GPU.
-res = glCheckFramebufferStatus(GL_FRAMEBUFFER)
-if res != GL_FRAMEBUFFER_COMPLETE:
-  raise RuntimeError('Framebuffer not completed')
 
 full = False
 # main loop
@@ -499,9 +478,12 @@ def drawRadar(x, y):
 
     setColor((0.0/255.0, 200.0/255.0, 0.0/255.0, 35/255.0))
 
+    drawTargets(x,y)
+    setColor((0.0/255.0, 200.0/255.0, 0.0/255.0, 35/255.0))
+
     pie_circle(0,0,range, fov/360)
 
-    drawTargets(x,y)
+
 
     setColor((0.0, 0.0, 0.0, 255.0))
     glRotatef(-fov, 0.0, 0.0, 1.0)
@@ -728,8 +710,8 @@ def unSet2d():
     glPopMatrix()
 
 def drawRadarTexture():
-    glBindFramebuffer(GL_FRAMEBUFFER, buf)
-    glViewport(0,0,radarx,radary)
+    #glBindFramebuffer(GL_FRAMEBUFFER, buf)
+    #glViewport(0,0,radarx,radary)
 
     setColor((0.0, 0.0, 0.0, 1.5/255.0))
     #rect(0,0,1000,1000)
@@ -742,8 +724,8 @@ def drawRadarTexture():
     drawRadar(xfscale(0), yfscale(50))
 
     # Restore normal buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, 0)
-    glViewport(0,0,window.width,window.height)
+    #glBindFramebuffer(GL_FRAMEBUFFER, 0)
+    #glViewport(0,0,window.width,window.height)
 
 
 @window.event
@@ -754,9 +736,10 @@ def on_draw():
     #draw_sphere()
     set2d()
 
+    drawRuler(xfscale(550), yfscale(50))
     if (time.time() > radartime):
         radartime = time.time() + 2.0
-        drawRadarTexture()
+    drawRadarTexture()
 
 
     glColor4f(1.0,0,0,1.0)
@@ -767,7 +750,7 @@ def on_draw():
 
     #drawFuelGauge(xfscale(475), yfscale(128))
     #drawGLoad(xfscale(-385), yfscale(128))
-    drawRuler(xfscale(550), yfscale(50))
+
 
     glColor4f(1.0,0,0,1.0)
     fps_display.draw()
@@ -779,20 +762,7 @@ def on_draw():
     drawCompass(xfscale(0), yfscale(910), afscale(900))
 
     setColor((1.0, 1.0, 1.0, 1.0))
-    glEnable(GL_TEXTURE_2D)
-    glBindTexture(GL_TEXTURE_2D, tex)
 
-    glBegin(GL_QUADS);
-    glTexCoord2i(0, 0)
-    glVertex2i(0, 0)
-    glTexCoord2i(1, 0)
-    glVertex2i(window.width, 0)
-    glTexCoord2i(1, 1)
-    glVertex2i(window.width, window.height)
-    glTexCoord2i(0, 1)
-    glVertex2i(0, window.height)
-    glEnd()
-    glDisable(GL_TEXTURE_2D)
     unSet2d()
 
 @window.event
