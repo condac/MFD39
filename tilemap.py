@@ -540,7 +540,7 @@ def drawFlightDirectorLines(x, y):
     altlabel.x = -10000
     altlabel.y = -10000
     altlabel.draw()
-    
+
     glPopMatrix()
 
     return
@@ -968,10 +968,9 @@ def pageMap():
                 mapColor = 0
         if key04:
             clearKeys()
-            currentMap = currentMap + 1
-            if (currentMap >= len(maps["maps"]) ):
-                currentMap = 0
-            currentTileX = -1
+            mapColor = mapColor - 1
+            if (mapColor < 0 ):
+                mapColor = 0
 
     if (subPageMap == "VAT") :
         if key01:
