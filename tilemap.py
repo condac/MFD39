@@ -235,7 +235,7 @@ def parseNetData(stin, stringdata, old):
 
 def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
-    global rawFuel, totalFuel, connection, lon, lat, groundspeed, aoa
+    global rawFuel, totalFuel, connection, lon, lat, groundspeed, aoa, speedbrake
     moredata = True
     while moredata:
         try:
