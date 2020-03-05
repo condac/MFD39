@@ -1,26 +1,14 @@
 import math
+from math import sin, cos, sqrt, atan2, radians
 import pyglet
 import numpy as np
 from pyglet.gl import *
 from ctypes import byref, sizeof, POINTER
 import time
 
-import os
 import json
-import random
 import socket
-import sys
-from pprint import pprint
-from PIL import Image
-import time
 
-import imageio
-import math
-from math import sin, cos, sqrt, atan2, radians
-import numpy as np
-import scipy
-import scipy.misc
-import scipy.ndimage.interpolation
 
 from sharedDrawFunctions import *
 

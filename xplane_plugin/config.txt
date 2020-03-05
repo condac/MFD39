@@ -26,7 +26,11 @@
 4.0.A5;0;AO_TEXT;0;500;100;900;sim/cockpit2/gauges/indicators/altitude_ft_pilot;0.0;-1.0;1.0;0;
 
 #fuel
-2.0.A6;0;AO_TEXT;0;500;100;900;sim/cockpit2/fuel/fuel_quantity[0];0.0;-1.0;1.0;0;
+2.0.F0;0;AO_TEXT;0;500;100;900;sim/cockpit2/fuel/fuel_quantity[0];0.0;-1.0;1.0;0;
+2.0.F1;0;AO_TEXT;0;500;100;900;sim/cockpit2/fuel/fuel_quantity[1];0.0;-1.0;1.0;0;
+2.0.F2;0;AO_TEXT;0;500;100;900;sim/cockpit2/fuel/fuel_quantity[2];0.0;-1.0;1.0;0;
+2.0.F3;0;AO_TEXT;0;500;100;900;sim/weapons/fuel_warhead_mass_now[0];0.0;-1.0;1.0;0;
+
 
 #gload
 2.0.A7;0;AO_TEXT;0;500;100;900;sim/flightmodel/forces/g_nrml;0.0;-1.0;1.0;0;
