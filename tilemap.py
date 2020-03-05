@@ -190,7 +190,7 @@ def createLabels():
                         group=None)
     airportlabel = pyglet.text.Label(str("speed"),
                         font_name='Consolas',
-                        font_size=aiscale(10),
+                        font_size=aiscale(16),
                         color=(0,0,0,255),
                         x=window.width//2, y=window.height//2,
                         anchor_x='left', anchor_y='center',
@@ -692,18 +692,18 @@ def drawAirports(x, y):
         glScalef(zoomfactor, zoomfactor, 1)
         for xx in airports:
             (ox, oy) = whereInMap(xx[apindex["laty"]],xx[apindex["lonx"]],zoomlevel)
-            circle_line(ox,oy,afscale(8), 1, 8)
+            circle_line(ox,oy,afscale(16), 2, 8)
             if (zoomlevel > 7):
                 airportlabel.text = xx[apindex["ident"]]
-                airportlabel.x = ox + airportlabel.font_size
+                airportlabel.x = ox + afscale(16)
                 airportlabel.y = oy
                 airportlabel.draw()
             if (zoomlevel > 8):
 
                 angle = np.deg2rad(float(xx[apindex["longest_runway_heading"]])+90)
-                cx = afscale(8) * math.cos(angle)
-                cy = afscale(8) * math.sin(angle)
-                line(ox-cx, oy-cy, ox+cx, oy+cy, 1)
+                cx = afscale(16) * math.cos(angle)
+                cy = afscale(16) * math.sin(angle)
+                line(ox-cx, oy-cy, ox+cx, oy+cy, 2)
 
 
         glPopMatrix()
