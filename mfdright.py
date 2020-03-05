@@ -515,7 +515,7 @@ def drawFlightDirector(x, y):
         line(x, y-body, x, y-wingspan, linewidth)
     else:
         line(x, y+body, x, y+wingspan, linewidth)
-    if (speedbrake >0):
+    if (speedbrake > 0.0):
         line(x, y, x+body, y+body, linewidth)
         line(x, y, x-body, y+body, linewidth)
     #pygame.draw.line(sb, self.colorGreen10,(x , y+body),(x, y+wingspan), xscale(10))

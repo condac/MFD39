@@ -293,7 +293,10 @@ def readNetwork():
                 a1 = stringdata.split("A12=")
                 a1 = a1[1].replace(";","")
                 #print(a1)
-                machspeed = float(a1)
+                try:
+                    machspeed = float(a1)
+                except:
+                    print(".")
             if "A13=" in stringdata:
                 a1 = stringdata.split("A13=")
                 a1 = a1[1].replace(";","")
