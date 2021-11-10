@@ -3,22 +3,13 @@ import pyglet
 import numpy as np
 from pyglet.gl import *
 
-#import os
 import json
-#import random
 import socket
-#import sys
-#from pprint import pprint
-#from PIL import Image
 import time
 
-#import imageio
 import math
 from math import sin, cos, sqrt, atan2, radians
 import numpy as np
-#import scipy
-#import scipy.misc
-#import scipy.ndimage.interpolation
 import keyboard
 import argparse
 
@@ -197,50 +188,7 @@ def createLabelsBatch():
     
 createLabelsBatch()
 
-def createLabels():
-    global speedlabel, smalllabel, speedlabels, altlabels, fuellabel
-    speedlabel = pyglet.text.Label(str("speed"),
-                          font_name='Arial',
-                          font_size=aiscale(32),
-                          color=(0,255,0,255),
-                          x=window.width//2, y=window.height//2,
-                          anchor_x='center', anchor_y='center',
-                          group=None)
-    smalllabel = pyglet.text.Label(str("speed"),
-                          font_name='Arial',
-                          font_size=aiscale(16),
-                          color=(0,255,0,255),
-                          x=window.width//2, y=window.height//2,
-                          anchor_x='center', anchor_y='center',
-                          group=None)
-    fuellabel = pyglet.text.Label(str("speed"),
-                        font_name='Monospace',
-                        font_size=aiscale(25),
-                        color=(0,255,0,255),
-                        x=window.width//2, y=window.height//2,
-                        anchor_x='right', anchor_y='center',
-                        group=None)
-    speedlabels = []
-    for i in range(10):
-        new = pyglet.text.Label(str(i),
-                              font_name='Arial',
-                              font_size=aiscale(30),
-                              color=(0,255,0,255),
-                              x=window.width//2, y=window.height//2,
-                              anchor_x='center', anchor_y='center',
-                              group=None)
-        speedlabels.append(new)
-    altlabels = []
-    for i in range(10):
-        new = pyglet.text.Label(str(i),
-                              font_name='Arial',
-                              font_size=aiscale(30),
-                              color=(0,255,0,255),
-                              x=window.width//2, y=window.height//2,
-                              anchor_x='center', anchor_y='center',
-                              group=None)
-        altlabels.append(new)
-createLabels()
+
 #glClearColor(0.0, 0.0, 0.0, 0.0)
 
 #glClearDepth(0.0)
@@ -261,8 +209,6 @@ localPort = 34556
 # function that increments to the next
 # point along a circle
 frame = 0
-
-
 
 
 radie = 45
@@ -374,12 +320,13 @@ def readNetwork():
                 aoa = float(a1)
         except socket.error:
             moredata = False
+
 def update_frame(x, y):
     global gearratio, geardown, connection
 
-    if (connection == False):
-        fakevalues()
-    readNetwork()
+    #if (connection == False):
+    fakevalues()
+    #readNetwork()
 
     if (gearratio >=0.9):
         geardown = True
@@ -430,328 +377,6 @@ def fakevalues():
         altitude = 900
     machspeed = speed*2/1000
 
-
-
-def drawAtext(x,y,r1,text,angle, w=1):
-    global speedlabel
-    a = -np.radians(angle)
-    x1 = int( x + (sin(a)*r1) )
-    y1 = int( y + (cos(a)*r1) )
-
-    speedlabel.text = str(text)
-    speedlabel.x = x1
-    speedlabel.y = y1
-    speedlabel.draw()
-
-def draw_speed():
-
-    global speed, speedlabels, machspeed
-    maxspeed = 1000
-    size = afscale(350/2)
-    size2 = afscale(128/2)
-    x = xfscale(-360)
-    y = yfscale(1000-230)
-
-    per = speed/maxspeed
-    visare = per *math.pi*2
-    #glColor4f(0.0, 1.0, 0.0, 1.0)
-    setColor(colorGreenMedium)
-    #glTranslatef(0.0, 0.0 , -0.2 )
-
-    if (machspeed > 0.5) :
-        textS = "M{:0.2f}".format(machspeed)
-        #speedlabel.text = "M{:0.2f}".format(machspeed)
-    else:
-        textS = str(int(speed) )
-        #speedlabel.text = str(int(speed) )
-    #speedlabel.text = textS
-    batchLabels[0].text = textS
-    
-    batchLabels[0].x = x
-    batchLabels[0].y = y
-    glDisable(GL_DEPTH_TEST)
-    #speedlabel.draw()
-
-    #glTranslatef(0.0, 0.0 , 0.2 )
-    #Setting Matrix Mode
-    glPushMatrix()
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-
-    #moving object left and right
-    glTranslatef(x, y , -0.0 ) #x,y,z,
-
-    #line(-math.sin(visare)*size2, -math.cos(visare)*size2, -math.sin(visare)*size, -math.cos(visare)*size, xfscale(10), (0.0,1.0,0.0,1.0) )
-    #rotating object
-
-    glRotatef(90.0, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
-
-    #glTranslatef(0.0, 0.0 , -0.1 )
-    #colorGreenDark
-    #glColor4f(0.0, 0.5, 0.0, 1.0)
-    setColor(colorGreenDark)
-    pie_circle(0,0,size, per)
-    glColor4f(0.0, 0.0, 0.0, 1.0)
-    circle(0,0,size2)
-    #glColor4f(0.0, 1.0, 0.0, 1.0)
-    setColor(colorGreenMedium)
-    circle_line(0,0,size, afscale(5))
-    circle_line(0,0,size2, afscale(5))
-    #Undo rotations after we are done
-    glRotatef(-90.0, 0.0, 0.0, 1.0)
-    setColor(colorGreenIntense)
-    line(-math.sin(visare)*size2, -math.cos(visare)*size2, -math.sin(visare)*size, -math.cos(visare)*size, afscale(10), colorGreenIntense )
-
-    #gradering
-    for i in range(10):
-        l = afscale(15)
-        a = i/10 *math.pi*2
-        sizel = size -l
-        #self.drawAline(sb, x, y, size, size-l, a, w=1)
-        setColor(colorGreenMedium)
-        line(-math.sin(a)*sizel, -math.cos(a)*sizel, -math.sin(a)*size, -math.cos(a)*size, afscale(5), colorGreenMedium )
-    #gradering text
-
-
-
-    glPopMatrix()
-    glColor4f(0.0, 1.0, 0.0, 1.0)
-    for i in range(10):
-        r1 = size-afscale(30)
-        a = i/10*math.pi*2
-
-
-        x1 =  x - (sin(a)*r1)
-        y1 =  y - (cos(a)*r1)
-
-        #speedlabels[i].text = str(i)
-        #speedlabels[i].x = x1
-        #speedlabels[i].y = y1
-        #speedlabels[i].draw()
-
-    #speedlabel.draw()
-    glEnable(GL_DEPTH_TEST)
-
-def draw_altitude():
-
-    global altitude, speedlabels
-    maxspeed = 1000
-    size = afscale(350/2)
-    size2 = afscale(220/2)
-    x = xfscale(360)
-    y = yfscale(1000-230)
-
-    per1 = altitude/1000
-    visare1 = per1 *math.pi*2
-    per2 = altitude/10000
-    visare2 = per2 *math.pi*2
-    per3 = altitude/100000
-    visare3 = per3 *math.pi*2
-    glColor4f(0.0, 1.0, 0.0, 1.0)
-    #glTranslatef(0.0, 0.0 , -0.2 )
-
-    batchLabels[1].text = str(int(altitude) )
-    batchLabels[1].x = x+size
-    batchLabels[1].y = y+size
-    glDisable(GL_DEPTH_TEST)
-    #speedlabel.draw()
-
-    glPushMatrix()
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-
-    glTranslatef(x, y , -0.0 ) #x,y,z,
-
-    glRotatef(90.0, 0.0, 0.0, 1.0) #by 10 degrees around the x, y or z axis
-
-
-
-    #glTranslatef(0.0, 0.0 , -0.1 )
-    setColor(colorGreenDark)
-    pie_circle(0,0,size, per3)
-
-    setColor((0,0,0,255))
-    circle(0,0,size2)
-    #setColor(colorGreenMedium)
-    #pie_circle(0,0,size2, per3)
-    setColor(colorGreenMedium)
-    circle_line(0,0,size, afscale(5))
-    circle_line(0,0,size2, afscale(5))
-    #Undo rotations after we are done
-    glRotatef(-90.0, 0.0, 0.0, 1.0)
-    line(-math.sin(visare1)*0.0, -math.cos(visare1)*0.0, -math.sin(visare1)*size, -math.cos(visare1)*size, afscale(10), colorGreenIntense )
-    line(-math.sin(visare2)*0.0, -math.cos(visare2)*0.0, -math.sin(visare2)*size2, -math.cos(visare2)*size2, afscale(10), colorGreenIntense )
-
-    #gradering
-    for i in range(10):
-        l = afscale(15)
-        a = i/10 *math.pi*2
-        sizel = size -l
-        #self.drawAline(sb, x, y, size, size-l, a, w=1)
-        line(-math.sin(a)*sizel, -math.cos(a)*sizel, -math.sin(a)*size, -math.cos(a)*size, afscale(5), colorGreenMedium )
-    #gradering text
-
-    glPopMatrix()
-    glColor4f(0.0, 1.0, 0.0, 1.0)
-    # for i in range(10):
-    #     r1 = size-afscale(30)
-    #     a = i/10*math.pi*2
-    # 
-    #     x1 =  x - (sin(a)*r1)
-    #     y1 =  y - (cos(a)*r1)
-
-        #altlabels[i].text = str(i)
-        #altlabels[i].x = x1
-        #altlabels[i].y = y1
-        #altlabels[i].draw()
-    #speedlabel.draw()
-    glEnable(GL_DEPTH_TEST)
-
-def drawFlightDirector(x, y):
-    global geardown, speedbrake
-    wingspan = afscale(100/2)
-    body = afscale(35/2)
-    linewidth = afscale(3)
-
-
-    setColor(colorGreenIntense)
-
-    #pygame.draw.circle(sb, self.colorGreen10, (x, y), body, xscale(10))
-    circle_line(x,y,body, afscale(5))
-    #pygame.draw.line(sb, self.colorGreen10,(x+body , y),(x+wingspan, y), xscale(10))
-    line(x+body , y, x+wingspan, y, afscale(5), colorGreenIntense)
-    #pygame.draw.line(sb, self.colorGreen10,(x-body , y),(x-wingspan, y), xscale(10))
-    line(x-body , y, x-wingspan, y, afscale(5), colorGreenIntense)
-    if (geardown):
-        line(x, y-body, x, y-wingspan, afscale(5), colorGreenIntense)
-    else:
-        line(x, y+body, x, y+wingspan, afscale(5), colorGreenIntense)
-    if (speedbrake >0):
-        line(x, y, x+body, y+body, linewidth, colorGreenIntense)
-        line(x, y, x-body, y+body, linewidth, colorGreenIntense)
-    #pygame.draw.line(sb, self.colorGreen10,(x , y+body),(x, y+wingspan), xscale(10))
-
-def drawFuelGauge(x,y):
-    global fuel, fuellabel, totalFuel
-    global fuel0, fuel1, fuel2, fuel3
-    height = afscale(440)
-    longline = afscale(20)
-    shortline = afscale(10)
-
-    fuelTotal = fuel0 + fuel1 + fuel2 + fuel3
-
-    fuel = fuelTotal / totalFuel
-
-    glDisable(GL_DEPTH_TEST)
-
-    line(x , y, x, y+fuelscale(2.0, height), afscale(5), colorGreenMedium)
-
-    #Line at 2.0
-    line(x , y+fuelscale(2.0, height), x-longline, y+fuelscale(2.0, height), afscale(5), colorGreenMedium)
-
-    #Line at 1.5 long
-    line(x , y+fuelscale(1.5, height), x-longline, y+fuelscale(1.5, height), afscale(5), colorGreenMedium)
-
-    #Line at 1.0
-    line(x , y+fuelscale(1.0, height), x-longline, y+fuelscale(1.0, height), afscale(5), colorGreenMedium)
-
-    #Line at 0.5
-    line(x , y+fuelscale(0.5, height), x-longline, y+fuelscale(0.5, height), afscale(5), colorGreenMedium)
-
-    #Small lines 0 to 1
-
-    for i in range(10):
-        iy = float(i/10.0)
-        line(x , y+fuelscale(iy, height), x-shortline, y+fuelscale(iy, height), afscale(5), colorGreenMedium)
-
-    #fuel bar
-    if (fuel >2.0):
-        fuel = 2.0
-    #lien at top of fuelbar
-    line(x , y+fuelscale(fuel, height), x+longline, y+fuelscale(fuel, height), afscale(5), colorGreenIntense)
-    #bar
-    line(x+longline/2 , y, x+longline/2, y+fuelscale(fuel, height), longline, colorGreenMedium)
-
-    #texts
-    fuellabel.text = str(2)
-    fuellabel.x = x-longline
-    fuellabel.y = y + fuelscale(2.0, height)
-    fuellabel.draw()
-
-    fuellabel.text = str(1)
-    fuellabel.x = x-longline
-    fuellabel.y = y + fuelscale(1.0, height)
-    fuellabel.draw()
-
-    fuellabel.text = str(".5")
-    fuellabel.x = x-longline
-    fuellabel.y = y + fuelscale(0.5, height)
-    fuellabel.draw()
-
-    fuellabel.text = str("B")
-    fuellabel.x = x-longline
-    fuellabel.y = y + (fuellabel.font_size+2)*3
-    fuellabel.draw()
-
-    fuellabel.text = str("R")
-    fuellabel.x = x-longline
-    fuellabel.y = y + (fuellabel.font_size+2)*2
-    fuellabel.draw()
-
-    fuellabel.text = str("Ä")
-    fuellabel.x = x-longline
-    fuellabel.y = y + (fuellabel.font_size+2)*1
-    fuellabel.draw()
-    glEnable(GL_DEPTH_TEST)
-
-
-def drawGLoad(x,y):
-    global gload, fuellabel
-    height = afscale(380)
-    longline = afscale(20)
-    shortline = afscale(10)
-    maxg = 9.0
-
-    line(x , y, x, y+linescale(maxg, maxg, height), afscale(5), colorGreenMedium)
-
-    #Line at 9.0
-    line(x , y+linescale(9.0, maxg, height), x-longline, y+linescale(9.0, maxg, height), afscale(5), colorGreenMedium)
-
-
-    #Small lines 0 to 9
-
-    for i in range(int(maxg)):
-
-        line(x , y+linescale(float(i), maxg, height), x-longline, y+linescale(float(i), maxg, height), afscale(5), colorGreenMedium)
-
-    #G bar
-    if (gload >10.0):
-        gload = 10.0
-    #lien at top of G bar
-    line(x , y+linescale(gload, maxg, height), x+longline, y+linescale(gload, maxg, height), afscale(5), colorGreenIntense)
-    #G bar
-    line(x+longline/2 , y, x+longline/2, y+linescale(gload, maxg, height), longline, colorGreenMedium)
-
-    #texts
-    fuellabel.text = str(9)
-    fuellabel.x = x-longline
-    fuellabel.y = y + linescale(9, maxg, height)
-    fuellabel.draw()
-
-    fuellabel.text = str(6)
-    fuellabel.x = x-longline
-    fuellabel.y = y + linescale(6, maxg, height)
-    fuellabel.draw()
-
-    fuellabel.text = str(3)
-    fuellabel.x = x-longline
-    fuellabel.y = y + linescale(3, maxg, height)
-    fuellabel.draw()
-
-    fuellabel.text = str("G")
-    fuellabel.x = x
-    fuellabel.y = y + height+(fuellabel.font_size)
-    fuellabel.draw()
 
 
 
@@ -875,19 +500,11 @@ def on_draw():
     draw_sphere()
     set2d()
 
-    draw_speed()
-    draw_altitude()
-
-    drawFuelGauge(xfscale(475), yfscale(128))
-    drawGLoad(xfscale(-385), yfscale(128))
-    drawFlightDirector(window.width/2, yfscale(380))
-    
-    batchText.draw()
-
     glColor4f(1.0,0,0,1.0)
     fps_display.draw()
 
     unSet2d()
+    
 def pressKey(str2):
     print(str2)
 
@@ -974,11 +591,11 @@ def on_resize(width, height):
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective(45, 1.0 * width / height, 1, balldepth)
-        createLabels()
+
         createLabelsBatch()
         #glLoadIdentity()
 clearKeys()
 keyboard.on_press(keyPressCallback, suppress=False)
 # every 1/10 th get the next frame
-pyglet.clock.schedule(update_frame, 1/10.0)
+pyglet.clock.schedule(update_frame, 1/100.0)
 pyglet.app.run()
