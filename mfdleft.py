@@ -81,13 +81,13 @@ if fullscreen:
     screen = screens[0]
     full = True
 
-config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24, double_buffer=True)
+config = pyglet.gl.Config( depth_size=24, double_buffer=True)
 #window = pyglet.window.Window(config=config, resizable=True, width = 1024, height=768, screen=screen, fullscreen=full)
 window = pyglet.window.Window(config=config, resizable=True,  screen=screen, fullscreen=full)
-glEnable(GL_LINE_SMOOTH)
-glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
-glEnable(GL_BLEND)                                  # transparency
-glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)   # transparency
+#glEnable(GL_LINE_SMOOTH)
+#glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
+#glEnable(GL_BLEND)                                  # transparency
+#glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)   # transparency
 glEnable(GL_DEPTH_TEST)
 
 colorGreenMedium = (0.0/255.0, 200.0/255.0, 0.0/255.0, 255.0)
@@ -149,9 +149,9 @@ batchText = pyglet.graphics.Batch()
 def createLabelsBatch():
     global batchLabels
     batchLabels = []
-    label = pyglet.text.Label(str("speed"), font_name='Arial', font_size=aiscale(32),color=(0,255,0,255), x=window.width//2, y=window.height//2, anchor_x='center', anchor_y='center', group=None, batch=batchText)
+    label = pyglet.text.Label(str("s"), font_name='Arial', font_size=aiscale(32),color=(0,255,0,255), x=-10, y=0, anchor_x='center', anchor_y='center', group=None, batch=batchText)
     batchLabels.append(label)
-    label = pyglet.text.Label(str("altitide"), font_name='Arial', font_size=aiscale(32),color=(0,255,0,255), x=window.width//2, y=window.height//2, anchor_x='center', anchor_y='center', group=None, batch=batchText)
+    label = pyglet.text.Label(str("a"), font_name='Arial', font_size=aiscale(32),color=(0,255,0,255), x=-10, y=0, anchor_x='center', anchor_y='center', group=None, batch=batchText)
     batchLabels.append(label)
     
     # speed dial text
@@ -412,7 +412,7 @@ def draw_sphere():
     gluQuadricDrawStyle(q,GLU_FILL)
     gluQuadricTexture(q, GL_TRUE)
 
-    gluSphere(q,ballsize,50,50)
+    gluSphere(q,ballsize,20,20)
 
     glDisable(texture.target)
     glMatrixMode(GL_PROJECTION)
