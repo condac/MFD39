@@ -147,7 +147,8 @@ def linescale(value, maxValue, height):
 batchText = pyglet.graphics.Batch()
 
 def createLabelsBatch():
-    global batchLabels
+    global batchLabels, batchText
+    batchText = pyglet.graphics.Batch()
     batchLabels = []
     label = pyglet.text.Label(str("s"), font_name='Arial', font_size=aiscale(32),color=(0,255,0,255), x=-10, y=0, anchor_x='center', anchor_y='center', group=None, batch=batchText)
     batchLabels.append(label)
