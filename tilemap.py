@@ -8,6 +8,17 @@ import keyboard
 from pyglet.gl import *
 from sharedDrawFunctions import *
 import time
+import argparse
+
+# Create the parser
+my_parser = argparse.ArgumentParser(description='MFD39')
+
+# Add the arguments
+my_parser.add_argument('-f', action='store_true', help="Fullscreen")
+# Execute the parse_args() method
+args = my_parser.parse_args()
+
+fullscreen = args.f
 
 zoomlevel = 9
 zoomfactor = 1.5
@@ -77,9 +88,13 @@ if (len(screens) >1):
   full = True
 else:
   screen = screens[0]
+if fullscreen:
+    screen = screens[0]
+    full = True
 
-config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24)
-window = pyglet.window.Window(config=config, resizable=True, width = 768, height=1024, screen=screen, fullscreen=full)
+config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24, double_buffer=True)
+#window = pyglet.window.Window(config=config, resizable=True, width = 768, height=1024, screen=screen, fullscreen=full)
+window = pyglet.window.Window(config=config, resizable=True,  screen=screen, fullscreen=full)
 glEnable(GL_LINE_SMOOTH)
 glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
 glEnable(GL_BLEND)                                  # transparency

@@ -65,7 +65,7 @@ if (len(screens) >1):
 else:
   screen = screens[0]
 
-config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24)
+config = pyglet.gl.Config(sample_buffers=1, samples=1, depth_size=24, double_buffer=True)
 window = pyglet.window.Window(config=config, resizable=True, width = 1024, height=768, screen=screen, fullscreen=full)
 glEnable(GL_LINE_SMOOTH)
 glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE)
@@ -883,7 +883,7 @@ def on_key_press(s,m):
     if s == pyglet.window.key.F5:
         totalFuel = rawFuel
         print(rawFuel)
-    if s == pyglet.window.key.F4:
+    if s == pyglet.window.key.F12:
         window.set_fullscreen(not window.fullscreen)
 
 @window.event
