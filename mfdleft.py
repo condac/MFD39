@@ -144,6 +144,59 @@ def linescale(value, maxValue, height):
     return out
 
 
+batchText = pyglet.graphics.Batch()
+
+def createLabelsBatch():
+    global batchLabels
+    batchLabels = []
+    label = pyglet.text.Label(str("speed"), font_name='Arial', font_size=aiscale(32),color=(0,255,0,255), x=window.width//2, y=window.height//2, anchor_x='center', anchor_y='center', group=None, batch=batchText)
+    batchLabels.append(label)
+    label = pyglet.text.Label(str("altitide"), font_name='Arial', font_size=aiscale(32),color=(0,255,0,255), x=window.width//2, y=window.height//2, anchor_x='center', anchor_y='center', group=None, batch=batchText)
+    batchLabels.append(label)
+    
+    # speed dial text
+    size = afscale(350/2)
+    size2 = afscale(128/2)
+    x = xfscale(-360)
+    y = yfscale(1000-230)
+    for i in range(10):
+        r1 = size-afscale(30)
+        a = i/10*math.pi*2
+
+
+        x1 =  x - (sin(a)*r1)
+        y1 =  y - (cos(a)*r1)
+
+        #speedlabels[i].text = str(i)
+        #speedlabels[i].x = x1
+        #speedlabels[i].y = y1
+        #speedlabels[i].draw()
+        label = pyglet.text.Label(str(i), font_name='Arial', font_size=aiscale(32),color=(0,255,0,255), x=x1, y=y1, anchor_x='center', anchor_y='center', group=None, batch=batchText)
+        batchLabels.append(label)
+    
+    # altitude dial text
+    
+    size = afscale(350/2)
+    size2 = afscale(220/2)
+    x = xfscale(360)
+    y = yfscale(1000-230)
+    for i in range(10):
+        r1 = size-afscale(30)
+        a = i/10*math.pi*2
+
+        x1 =  x - (sin(a)*r1)
+        y1 =  y - (cos(a)*r1)
+
+        # altlabels[i].text = str(i)
+        # altlabels[i].x = x1
+        # altlabels[i].y = y1
+        # altlabels[i].draw() 
+        label = pyglet.text.Label(str(i), font_name='Arial', font_size=aiscale(32),color=(0,255,0,255), x=x1, y=y1, anchor_x='center', anchor_y='center', group=None, batch=batchText)
+        batchLabels.append(label)   
+    
+    
+createLabelsBatch()
+
 def createLabels():
     global speedlabel, smalllabel, speedlabels, altlabels, fuellabel
     speedlabel = pyglet.text.Label(str("speed"),
@@ -406,13 +459,18 @@ def draw_speed():
     #glTranslatef(0.0, 0.0 , -0.2 )
 
     if (machspeed > 0.5) :
-        speedlabel.text = "M{:0.2f}".format(machspeed)
+        textS = "M{:0.2f}".format(machspeed)
+        #speedlabel.text = "M{:0.2f}".format(machspeed)
     else:
-        speedlabel.text = str(int(speed) )
-    speedlabel.x = x
-    speedlabel.y = y
+        textS = str(int(speed) )
+        #speedlabel.text = str(int(speed) )
+    #speedlabel.text = textS
+    batchLabels[0].text = textS
+    
+    batchLabels[0].x = x
+    batchLabels[0].y = y
     glDisable(GL_DEPTH_TEST)
-    speedlabel.draw()
+    #speedlabel.draw()
 
     #glTranslatef(0.0, 0.0 , 0.2 )
     #Setting Matrix Mode
@@ -466,12 +524,12 @@ def draw_speed():
         x1 =  x - (sin(a)*r1)
         y1 =  y - (cos(a)*r1)
 
-        speedlabels[i].text = str(i)
-        speedlabels[i].x = x1
-        speedlabels[i].y = y1
-        speedlabels[i].draw()
+        #speedlabels[i].text = str(i)
+        #speedlabels[i].x = x1
+        #speedlabels[i].y = y1
+        #speedlabels[i].draw()
 
-    speedlabel.draw()
+    #speedlabel.draw()
     glEnable(GL_DEPTH_TEST)
 
 def draw_altitude():
@@ -492,11 +550,11 @@ def draw_altitude():
     glColor4f(0.0, 1.0, 0.0, 1.0)
     #glTranslatef(0.0, 0.0 , -0.2 )
 
-    speedlabel.text = str(int(altitude) )
-    speedlabel.x = x+size
-    speedlabel.y = y+size
+    batchLabels[1].text = str(int(altitude) )
+    batchLabels[1].x = x+size
+    batchLabels[1].y = y+size
     glDisable(GL_DEPTH_TEST)
-    speedlabel.draw()
+    #speedlabel.draw()
 
     glPushMatrix()
     glMatrixMode(GL_MODELVIEW)
@@ -542,11 +600,11 @@ def draw_altitude():
         x1 =  x - (sin(a)*r1)
         y1 =  y - (cos(a)*r1)
 
-        altlabels[i].text = str(i)
-        altlabels[i].x = x1
-        altlabels[i].y = y1
-        altlabels[i].draw()
-    speedlabel.draw()
+        #altlabels[i].text = str(i)
+        #altlabels[i].x = x1
+        #altlabels[i].y = y1
+        #altlabels[i].draw()
+    #speedlabel.draw()
     glEnable(GL_DEPTH_TEST)
 
 def drawFlightDirector(x, y):
@@ -823,6 +881,8 @@ def on_draw():
     drawFuelGauge(xfscale(475), yfscale(128))
     drawGLoad(xfscale(-385), yfscale(128))
     drawFlightDirector(window.width/2, yfscale(380))
+    
+    batchText.draw()
 
     glColor4f(1.0,0,0,1.0)
     fps_display.draw()
@@ -915,6 +975,7 @@ def on_resize(width, height):
         glLoadIdentity()
         gluPerspective(45, 1.0 * width / height, 1, balldepth)
         createLabels()
+        createLabelsBatch()
         #glLoadIdentity()
 clearKeys()
 keyboard.on_press(keyPressCallback, suppress=False)
