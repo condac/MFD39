@@ -11,6 +11,7 @@ import socket
 #from pprint import pprint
 #from PIL import Image
 import time
+import threading
 
 #import imageio
 import math
@@ -285,102 +286,104 @@ def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel, connection
     global machspeed, aoa, speedbrake
     global fuel0, fuel1, fuel2, fuel3
-    moredata = True
-    while moredata:
-        try:
-            message, address = s.recvfrom(4098)
-            stringdata = message.decode('utf-8', "ignore").split("}")[0]
-            #print(stringdata)
-            speedbrake = parseNetData("A14=", stringdata, speedbrake)
+    while True:
+        moredata = True
+        while moredata:
+            try:
+                message, address = s.recvfrom(4098)
+                stringdata = message.decode('utf-8', "ignore").split("}")[0]
+                #print(stringdata)
+                speedbrake = parseNetData("A14=", stringdata, speedbrake)
 
 
-            if "A1=" in stringdata:
-                a1 = stringdata.split("A1=")
-                a1 = a1[1].replace(";","")
+                if "A1=" in stringdata:
+                    a1 = stringdata.split("A1=")
+                    a1 = a1[1].replace(";","")
 
-                tilt = float(a1)
-                connection = True
+                    tilt = float(a1)
+                    connection = True
 
-            if "A2=" in stringdata:
-                a1 = stringdata.split("A2=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                heading = float(a1)
-            if "A3=" in stringdata:
-                a1 = stringdata.split("A3=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                rota = float(a1)
-            if "A4=" in stringdata:
-                a1 = stringdata.split("A4=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                speed = float(a1)
-            if "A5=" in stringdata:
-                a1 = stringdata.split("A5=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                altitude = float(a1)
-                connection = True
-            if "A6=" in stringdata:
-                a1 = stringdata.split("A6=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                rawFuel = float(a1)
-                fuel = rawFuel / totalFuel
+                if "A2=" in stringdata:
+                    a1 = stringdata.split("A2=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    heading = float(a1)
+                if "A3=" in stringdata:
+                    a1 = stringdata.split("A3=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    rota = float(a1)
+                if "A4=" in stringdata:
+                    a1 = stringdata.split("A4=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    speed = float(a1)
+                if "A5=" in stringdata:
+                    a1 = stringdata.split("A5=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    altitude = float(a1)
+                    connection = True
+                if "A6=" in stringdata:
+                    a1 = stringdata.split("A6=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    rawFuel = float(a1)
+                    fuel = rawFuel / totalFuel
 
-            if "F0=" in stringdata:
-                a1 = stringdata.split("F0=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                fuel0 = float(a1)
-            if "F1=" in stringdata:
-                a1 = stringdata.split("F1=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                fuel1 = float(a1)
-            if "F2=" in stringdata:
-                a1 = stringdata.split("F2=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                fuel2 = float(a1)
-            if "F3=" in stringdata:
-                a1 = stringdata.split("F3=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                fuel3 = float(a1)
+                if "F0=" in stringdata:
+                    a1 = stringdata.split("F0=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    fuel0 = float(a1)
+                if "F1=" in stringdata:
+                    a1 = stringdata.split("F1=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    fuel1 = float(a1)
+                if "F2=" in stringdata:
+                    a1 = stringdata.split("F2=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    fuel2 = float(a1)
+                if "F3=" in stringdata:
+                    a1 = stringdata.split("F3=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    fuel3 = float(a1)
 
-            if "A7=" in stringdata:
-                a1 = stringdata.split("A7=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                gload = float(a1)
-            if "A8=" in stringdata:
-                a1 = stringdata.split("A8=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                gearratio = float(a1)
-            if "A12=" in stringdata:
-                a1 = stringdata.split("A12=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                try:
-                    machspeed = float(a1)
-                except:
-                    print(".")
-            if "A13=" in stringdata:
-                a1 = stringdata.split("A13=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                aoa = float(a1)
-        except socket.error:
-            moredata = False
+                if "A7=" in stringdata:
+                    a1 = stringdata.split("A7=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    gload = float(a1)
+                if "A8=" in stringdata:
+                    a1 = stringdata.split("A8=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    gearratio = float(a1)
+                if "A12=" in stringdata:
+                    a1 = stringdata.split("A12=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    try:
+                        machspeed = float(a1)
+                    except:
+                        print(".")
+                if "A13=" in stringdata:
+                    a1 = stringdata.split("A13=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    aoa = float(a1)
+            except socket.error:
+                moredata = False
+                
 def update_frame(x, y):
     global gearratio, geardown, connection
 
     if (connection == False):
         fakevalues()
-    readNetwork()
+    #readNetwork()
 
     if (gearratio >=0.9):
         geardown = True
@@ -979,6 +982,10 @@ def on_resize(width, height):
         createLabelsBatch()
         #glLoadIdentity()
 clearKeys()
+x = threading.Thread(target=readNetwork)
+print("startar nätverks tråd")
+x.start()
+    
 keyboard.on_press(keyPressCallback, suppress=False)
 # every 1/10 th get the next frame
 pyglet.clock.schedule(update_frame, 1/10.0)
