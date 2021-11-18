@@ -62,6 +62,7 @@ gearratio = 0.0
 geardown = True
 
 connection = False
+running = True
 
 full = False
 # main loop
@@ -286,7 +287,7 @@ def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio, rawFuel, totalFuel, connection
     global machspeed, aoa, speedbrake
     global fuel0, fuel1, fuel2, fuel3
-    while True:
+    while running:
         moredata = True
         while moredata:
             try:
@@ -990,3 +991,4 @@ keyboard.on_press(keyPressCallback, suppress=False)
 # every 1/10 th get the next frame
 pyglet.clock.schedule(update_frame, 1/10.0)
 pyglet.app.run()
+running = False

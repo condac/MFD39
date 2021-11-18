@@ -10,6 +10,8 @@ from sharedDrawFunctions import *
 import time
 import argparse
 
+import threading
+
 # Create the parser
 my_parser = argparse.ArgumentParser(description='MFD39')
 
@@ -46,6 +48,7 @@ altitude = 0.0
 groundspeed = 100.0
 
 connection = False
+running = True
 
 currentTileX = 0
 currentTileY = 0
@@ -251,87 +254,91 @@ def parseNetData(stin, stringdata, old):
 def readNetwork():
     global tilt, heading, rota, speed, altitude, fuel, gload, gearratio
     global rawFuel, totalFuel, connection, lon, lat, groundspeed, aoa, speedbrake
-    moredata = True
-    while moredata:
-        try:
-            message, address = s.recvfrom(4098)
-            stringdata = message.decode('utf-8', "ignore").split("}")[0]
-            #print(stringdata)
-            speedbrake = parseNetData("A14=", stringdata, speedbrake)
+    
+    while running:
+        moredata = True
+        while moredata:
+            try:
+                message, address = s.recvfrom(4098)
+                stringdata = message.decode('utf-8', "ignore").split("}")[0]
+                #print(stringdata)
+                speedbrake = parseNetData("A14=", stringdata, speedbrake)
 
 
-            if "A1=" in stringdata:
-                a1 = stringdata.split("A1=")
-                a1 = a1[1].replace(";","")
+                if "A1=" in stringdata:
+                    a1 = stringdata.split("A1=")
+                    a1 = a1[1].replace(";","")
 
-                tilt = float(a1)
-                connection = True
+                    tilt = float(a1)
+                    connection = True
 
-            if "A2=" in stringdata:
-                a1 = stringdata.split("A2=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                heading = float(a1)
-            if "A3=" in stringdata:
-                a1 = stringdata.split("A3=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                rota = float(a1)
-            if "A4=" in stringdata:
-                a1 = stringdata.split("A4=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                speed = float(a1)
-            if "A5=" in stringdata:
-                a1 = stringdata.split("A5=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                altitude = float(a1)
-                connection = True
-            if "A6=" in stringdata:
-                a1 = stringdata.split("A6=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                rawFuel = float(a1)
-                fuel = rawFuel / totalFuel
-            if "A7=" in stringdata:
-                a1 = stringdata.split("A7=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                gload = float(a1)
-            if "A8=" in stringdata:
-                a1 = stringdata.split("A8=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                gearratio = float(a1)
-            if "A9=" in stringdata:
-                a1 = stringdata.split("A9=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                lon = float(a1)
-            if "A10=" in stringdata:
-                a1 = stringdata.split("A10=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                lat = float(a1)
-            if "A11=" in stringdata:
-                a1 = stringdata.split("A11=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                groundspeed = float(a1)
-            if "A13=" in stringdata:
-                a1 = stringdata.split("A13=")
-                a1 = a1[1].replace(";","")
-                #print(a1)
-                aoa = float(a1)
-        except socket.error:
-            moredata = False
+                if "A2=" in stringdata:
+                    a1 = stringdata.split("A2=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    heading = float(a1)
+                if "A3=" in stringdata:
+                    a1 = stringdata.split("A3=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    rota = float(a1)
+                if "A4=" in stringdata:
+                    a1 = stringdata.split("A4=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    speed = float(a1)
+                if "A5=" in stringdata:
+                    a1 = stringdata.split("A5=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    altitude = float(a1)
+                    connection = True
+                if "A6=" in stringdata:
+                    a1 = stringdata.split("A6=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    rawFuel = float(a1)
+                    fuel = rawFuel / totalFuel
+                if "A7=" in stringdata:
+                    a1 = stringdata.split("A7=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    gload = float(a1)
+                if "A8=" in stringdata:
+                    a1 = stringdata.split("A8=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    gearratio = float(a1)
+                if "A9=" in stringdata:
+                    a1 = stringdata.split("A9=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    lon = float(a1)
+                if "A10=" in stringdata:
+                    a1 = stringdata.split("A10=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    lat = float(a1)
+                if "A11=" in stringdata:
+                    a1 = stringdata.split("A11=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    groundspeed = float(a1)
+                if "A13=" in stringdata:
+                    a1 = stringdata.split("A13=")
+                    a1 = a1[1].replace(";","")
+                    #print(a1)
+                    aoa = float(a1)
+            except socket.error:
+                moredata = False
+                time.sleep(0.01)
+                
 def update_frame(x, y):
     global gearratio, geardown, connection
 
     if (connection == False):
         fakevalues()
-    readNetwork()
+    #readNetwork()
 
     nextWaypoint()
     if (gearratio >=0.9):
@@ -1343,6 +1350,9 @@ def on_resize(width, height):
 #keyboard.add_hotkey("F9", keyPressCallback5, args=("key15"))
 #keyboard.add_hotkey("F10", keyPressCallback5, args=("key16"))
 
+x = threading.Thread(target=readNetwork)
+print("startar nätverks tråd")
+x.start()
 
 clearKeys()
 keyboard.on_press(keyPressCallback, suppress=False)
@@ -1350,3 +1360,5 @@ keyboard.on_press(keyPressCallback, suppress=False)
 # every 1/10 th get the next frame
 pyglet.clock.schedule(update_frame, 1/10.0)
 pyglet.app.run()
+
+running = False
